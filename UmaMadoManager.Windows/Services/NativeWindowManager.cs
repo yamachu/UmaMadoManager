@@ -1,12 +1,12 @@
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Runtime.InteropServices;
 using UmaMadoManager.Core.Models;
+using UmaMadoManager.Core.Services;
 
-namespace UmaMadoManager.Core.Services
+namespace UmaMadoManager.Windows.Services
 {
     public class NativeWindowManager : INativeWindowManager
     {
@@ -41,13 +41,6 @@ namespace UmaMadoManager.Core.Services
             public int top;
             public int right;
             public int bottom;
-        }
-
-        private Screen[] _screens;
-
-        public NativeWindowManager(Screen[] screens)
-        {
-            _screens = screens;
         }
 
         public IntPtr GetWindowHandle(string windowName)
@@ -88,11 +81,6 @@ namespace UmaMadoManager.Core.Services
         {
             SetForegroundWindow(hWnd);
             MoveWindow(hWnd, rect.Left, rect.Top, rect.Width, rect.Height, 1);
-        }
-
-        public IEnumerable<Screen> GetScreens()
-        {
-            return _screens;
         }
     }
 }
