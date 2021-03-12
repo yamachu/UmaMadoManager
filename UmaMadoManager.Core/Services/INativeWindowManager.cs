@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using UmaMadoManager.Core.Models;
 
 namespace UmaMadoManager.Core.Services
@@ -10,6 +9,5 @@ namespace UmaMadoManager.Core.Services
         IntPtr GetWindowHandle(string windowName);
         WindowRect GetWindowRect(IntPtr hWnd);
         void ResizeWindow(IntPtr hWnd, WindowRect rect);
-        IEnumerable<Screen> GetScreens();
     }
 }
