@@ -1,7 +1,6 @@
 using System;
 using System.Windows.Forms;
-using System.Linq;
-using System.Reactive.Linq;
+using UmaMadoManager.Windows.Services;
 
 namespace UmaMadoManager.Windows
 {
@@ -17,16 +16,10 @@ namespace UmaMadoManager.Windows
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
 
-            var nativeWindowManager = new Core.Services.NativeWindowManager(Screen.AllScreens.Select(s =>
-            {
-                return new Core.Models.Screen
-                {
-                    Bounds = s.Bounds,
-                    WorkingArea = s.WorkingArea,
-                };
-            }).ToArray());
+            var nativeWindowManager = new NativeWindowManager();
+            var screenManager = new ScreenManager();
 
-            var _ = new Views.UmaMadoManagerUI(new Core.ViewModels.AxisStandardViewModel(nativeWindowManager));
+            var _ = new Views.UmaMadoManagerUI(new Core.ViewModels.AxisStandardViewModel(nativeWindowManager, screenManager));
             Application.Run();
         }
     }
