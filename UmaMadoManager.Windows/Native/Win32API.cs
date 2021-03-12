@@ -14,6 +14,10 @@ namespace UmaMadoManager.Windows.Native
         [DllImport("user32.dll", SetLastError = true)]
         public static extern int MoveWindow(IntPtr hWnd, int X, int Y, int nWidth, int nHeight, int bRepaint);
 
+        // For debugging
+        [DllImport("kernel32.dll")]
+        public static extern int AllocConsole();
+
         [StructLayout(LayoutKind.Sequential)]
         public struct WINDOWINFO
         {
