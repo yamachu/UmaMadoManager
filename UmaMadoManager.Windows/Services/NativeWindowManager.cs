@@ -5,44 +5,12 @@ using System.Reactive.Linq;
 using System.Runtime.InteropServices;
 using UmaMadoManager.Core.Models;
 using UmaMadoManager.Core.Services;
+using static UmaMadoManager.Windows.Native.Win32API;
 
 namespace UmaMadoManager.Windows.Services
 {
     public class NativeWindowManager : INativeWindowManager
     {
-        [DllImport("user32.dll")]
-        private static extern int GetWindowInfo(IntPtr hWnd, ref WINDOWINFO pwi);
-
-        [DllImport("user32.dll")]
-        private static extern int SetForegroundWindow(IntPtr hWnd);
-
-        [DllImport("user32.dll")]
-        private static extern int MoveWindow(IntPtr hWnd, int X, int Y, int nWidth, int nHeight, int bRepaint);
-
-        [StructLayout(LayoutKind.Sequential)]
-        public struct WINDOWINFO
-        {
-            public int cbSize;
-            public RECT rcWindow;
-            public RECT rcClient;
-            public int dwStyle;
-            public int dwExStyle;
-            public int dwWindowStatus;
-            public uint cxWindowBorders;
-            public uint cyWindowBorders;
-            public short atomWindowType;
-            public short wCreatorVersion;
-        }
-
-        [StructLayout(LayoutKind.Sequential)]
-        public struct RECT
-        {
-            public int left;
-            public int top;
-            public int right;
-            public int bottom;
-        }
-
         public IntPtr GetWindowHandle(string windowName)
         {
             try
@@ -61,7 +29,7 @@ namespace UmaMadoManager.Windows.Services
         {
             var p = new WINDOWINFO();
             p.cbSize = Marshal.SizeOf<WINDOWINFO>();
-            var ret = NativeWindowManager.GetWindowInfo(hWnd, ref p);
+            var ret = GetWindowInfo(hWnd, ref p);
 
             if (ret == 0)
             {
