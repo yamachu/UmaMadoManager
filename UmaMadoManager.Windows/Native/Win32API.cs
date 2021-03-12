@@ -5,13 +5,13 @@ namespace UmaMadoManager.Windows.Native
 {
     public static class Win32API
     {
-        [DllImport("user32.dll")]
+        [DllImport("user32.dll", SetLastError = true)]
         public static extern int GetWindowInfo(IntPtr hWnd, ref WINDOWINFO pwi);
 
-        [DllImport("user32.dll")]
+        [DllImport("user32.dll", SetLastError = true)]
         public static extern int SetForegroundWindow(IntPtr hWnd);
 
-        [DllImport("user32.dll")]
+        [DllImport("user32.dll", SetLastError = true)]
         public static extern int MoveWindow(IntPtr hWnd, int X, int Y, int nWidth, int nHeight, int bRepaint);
 
         [StructLayout(LayoutKind.Sequential)]
