@@ -30,65 +30,68 @@ namespace UmaMadoManager.Core.ViewModels
                 .Distinct()
                 .ToReadOnlyReactiveProperty();
 
-            var windowRect = targetWindowHandle.CombineLatest(Observable.Interval(TimeSpan.FromSeconds(1.5)))
-            .Select(x =>
-            {
-                if (x.First == IntPtr.Zero)
+            var windowRect = targetWindowHandle
+                .CombineLatest(
+                    Observable.FromEventPattern(nativeWindowManager, nameof(nativeWindowManager.OnMoveOrSizeChanged))
+                )
+                .Select(x =>
                 {
-                    return WindowRect.Empty;
-                }
-                var r = nativeWindowManager.GetWindowRect(x.First);
-                if (r.IsEmpty)
-                {
-                    return WindowRect.Empty;
-                }
-                return r;
-            });
+                    if (x.First == IntPtr.Zero)
+                    {
+                        return WindowRect.Empty;
+                    }
+                    var r = nativeWindowManager.GetWindowRect(x.First);
+                    if (r.IsEmpty)
+                    {
+                        return WindowRect.Empty;
+                    }
+                    return r;
+                });
 
             Disposable.Add(windowRect.CombineLatest(targetWindowHandle, Vertical, Horizontal)
-            .Where(x => x.Second != IntPtr.Zero)
-            .Subscribe(x =>
-            {
-                var containsScreen = screenManager.GetScreens()
-                    .Where(s => s.ContainsWindow(x.First))
-                    .Cast<Screen?>()
-                    .FirstOrDefault();
-                if (containsScreen == null)
+                .Where(x => x.Second != IntPtr.Zero)
+                .Subscribe(x =>
                 {
-                    return;
-                }
-                switch (x.First.Direction)
-                {
-                    case WindowDirection.Horizontal:
-                        if (x.Fourth == AxisStandard.Application)
-                        {
-                            return;
-                        }
-                        if (x.Fourth == AxisStandard.User)
-                        {
-                            return;
-                        }
-
-                        // Now supports Full Only
-                        nativeWindowManager.ResizeWindow(x.Second, containsScreen.Value.MaxContainerbleWindowRect(x.First));
-
+                    var containsScreen = screenManager.GetScreens()
+                        .Where(s => s.ContainsWindow(x.First))
+                        .Cast<Screen?>()
+                        .FirstOrDefault();
+                    if (containsScreen == null)
+                    {
                         return;
-                    case WindowDirection.Vertical:
-                        if (x.Third == AxisStandard.Application)
-                        {
-                            return;
-                        }
-                        if (x.Third == AxisStandard.User)
-                        {
-                            return;
-                        }
+                    }
+                    switch (x.First.Direction)
+                    {
+                        case WindowDirection.Horizontal:
+                            if (x.Fourth == AxisStandard.Application)
+                            {
+                                return;
+                            }
+                            if (x.Fourth == AxisStandard.User)
+                            {
+                                return;
+                            }
 
-                        // Now supports Full Only
-                        nativeWindowManager.ResizeWindow(x.Second, containsScreen.Value.MaxContainerbleWindowRect(x.First));
+                            // Now supports Full Only
+                            nativeWindowManager.ResizeWindow(x.Second, containsScreen.Value.MaxContainerbleWindowRect(x.First));
 
-                        return;
-                }
-            }));
+                            return;
+                        case WindowDirection.Vertical:
+                            if (x.Third == AxisStandard.Application)
+                            {
+                                return;
+                            }
+                            if (x.Third == AxisStandard.User)
+                            {
+                                return;
+                            }
+
+                            // Now supports Full Only
+                            nativeWindowManager.ResizeWindow(x.Second, containsScreen.Value.MaxContainerbleWindowRect(x.First));
+
+                            return;
+                    }
+                }));
         }
     }
 }

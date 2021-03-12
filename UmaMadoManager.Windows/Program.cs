@@ -12,6 +12,7 @@ namespace UmaMadoManager.Windows
         [STAThread]
         static void Main()
         {
+            // Native.Win32API.AllocConsole();
             Application.SetHighDpiMode(HighDpiMode.SystemAware);
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
