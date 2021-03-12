@@ -19,7 +19,7 @@ namespace UmaMadoManager.Core.ViewModels
         private ReadOnlyReactiveProperty<IntPtr> targetWindowHandle;
 
         // FIXME: VMでやることじゃない
-        public AxisStandardViewModel(INativeWindowManager nativeWindowManager)
+        public AxisStandardViewModel(INativeWindowManager nativeWindowManager, IScreenManager screenManager)
         {
             Vertical = axisStandardSettings.Vertical;
             Horizontal = axisStandardSettings.Horizontal;
@@ -49,7 +49,7 @@ namespace UmaMadoManager.Core.ViewModels
             .Where(x => x.Second != IntPtr.Zero)
             .Subscribe(x =>
             {
-                var containsScreen = nativeWindowManager.GetScreens()
+                var containsScreen = screenManager.GetScreens()
                     .Where(s => s.ContainsWindow(x.First))
                     .Cast<Screen?>()
                     .FirstOrDefault();
