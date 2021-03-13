@@ -15,6 +15,7 @@ namespace UmaMadoManager.Core.ViewModels
         private AxisStandardSettings axisStandardSettings = new AxisStandardSettings();
         public ReactiveProperty<AxisStandard> Vertical { get; }
         public ReactiveProperty<AxisStandard> Horizontal { get; }
+        public ReactiveProperty<WindowFittingStandard> WindowFittingStandard { get; }
 
         public ReactiveProperty<MuteCondition> MuteCondition { get; }
 
@@ -30,6 +31,7 @@ namespace UmaMadoManager.Core.ViewModels
         {
             Vertical = axisStandardSettings.Vertical;
             Horizontal = axisStandardSettings.Horizontal;
+            WindowFittingStandard = new ReactiveProperty<WindowFittingStandard>(Models.WindowFittingStandard.LeftTop);
             MuteCondition = new ReactiveProperty<MuteCondition>(Models.MuteCondition.Nop);
             // 他のアプリケーションにも使えるかもしれんなぁということで
             TargetApplicationName = new ReactiveProperty<string>("umamusume");
@@ -92,7 +94,7 @@ namespace UmaMadoManager.Core.ViewModels
                 audioManager.SetMute(handle, condition.ToIsMute(state));
             }));
 
-            Disposable.Add(windowRect.CombineLatest(targetWindowHandle, Vertical, Horizontal)
+            Disposable.Add(windowRect.DistinctUntilChanged().CombineLatest(targetWindowHandle, Vertical.CombineLatest(WindowFittingStandard), Horizontal)
                 .Where(x => x.Second != IntPtr.Zero)
                 .Subscribe(x =>
                 {
@@ -117,21 +119,22 @@ namespace UmaMadoManager.Core.ViewModels
                             }
 
                             // Now supports Full Only
-                            nativeWindowManager.ResizeWindow(x.Second, containsScreen.Value.MaxContainerbleWindowRect(x.First));
+                            nativeWindowManager.ResizeWindow(x.Second, containsScreen.Value.MaxContainerbleWindowRect(x.First, Models.WindowFittingStandard.LeftTop /* 使わないので固定値 */));
 
                             return;
                         case WindowDirection.Vertical:
-                            if (x.Third == AxisStandard.Application)
+                            var (axis, fittingStandard) = x.Third;
+                            if (axis == AxisStandard.Application)
                             {
                                 return;
                             }
-                            if (x.Third == AxisStandard.User)
+                            if (axis == AxisStandard.User)
                             {
                                 return;
                             }
 
                             // Now supports Full Only
-                            nativeWindowManager.ResizeWindow(x.Second, containsScreen.Value.MaxContainerbleWindowRect(x.First));
+                            nativeWindowManager.ResizeWindow(x.Second, containsScreen.Value.MaxContainerbleWindowRect(x.First, fittingStandard));
 
                             return;
                     }

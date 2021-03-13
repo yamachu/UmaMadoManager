@@ -14,7 +14,7 @@ namespace UmaMadoManager.Core.Models
             return WorkingArea.Left <= rect.Left && rect.Left < WorkingArea.Right && WorkingArea.Top <= rect.Top && rect.Top < WorkingArea.Bottom;
         }
 
-        public WindowRect MaxContainerbleWindowRect(WindowRect baseRect)
+        public WindowRect MaxContainerbleWindowRect(WindowRect baseRect, WindowFittingStandard fittingStandard)
         {
             var workingAreaRatio = (double)WorkingArea.Height / WorkingArea.Width;
             switch (baseRect.Direction)
@@ -46,11 +46,12 @@ namespace UmaMadoManager.Core.Models
                     if (workingAreaRatio < baseRect.AspectRatio)
                     {
                         var baseLength = (double)WorkingArea.Height / baseRect.Height;
+                        var nextWidth = (int)Math.Floor(baseRect.Width * baseLength);
                         return new WindowRect
                         {
-                            Left = WorkingArea.Left,
+                            Left = fittingStandard == WindowFittingStandard.LeftTop ? WorkingArea.Left : WorkingArea.Right - nextWidth,
                             Top = WorkingArea.Top,
-                            Right = (int)Math.Floor(baseRect.Width * baseLength) + WorkingArea.Left,
+                            Right = fittingStandard == WindowFittingStandard.LeftTop ? WorkingArea.Left + nextWidth : WorkingArea.Right,
                             Bottom = WorkingArea.Bottom,
                         };
                     }
