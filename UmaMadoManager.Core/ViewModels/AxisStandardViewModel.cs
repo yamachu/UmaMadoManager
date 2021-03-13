@@ -144,6 +144,10 @@ namespace UmaMadoManager.Core.ViewModels
                             return;
                     }
                 }));
+
+            Disposable.Add(
+                Observable.FromAsync<string>(() => versionRepository.GetLatestVersion()).Subscribe(v => LatestVersion.Value = v) 
+            );
         }
     }
 }
