@@ -153,6 +153,21 @@ namespace UmaMadoManager.Windows.Views
                 new ToolStripSeparator(),
                 muteSettingMenus,
                 new ToolStripSeparator(),
+                new ToolStripMenuItem("Help").Also(v => {
+                    v.Click += (_, _) => {
+                        var url = "https://yamachu.booth.pm/items/2811984";
+
+                        try
+                        {
+                            // see: https://brockallen.com/2016/09/24/process-start-for-urls-on-net-core/
+                            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo("cmd", $"/c start {url}") { CreateNoWindow = true });
+                        }
+                        catch (Exception e)
+                        {
+                            System.Console.WriteLine(e);
+                        }
+                    };
+                }),
                 new ToolStripMenuItem("New Version Released").Also(v => {
                     Disposable.Add(_VM.LatestVersion.Subscribe(version => {
                         if (version == "") {
