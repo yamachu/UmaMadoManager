@@ -20,8 +20,8 @@ namespace UmaMadoManager.Windows
             var nativeWindowManager = new NativeWindowManager();
             var screenManager = new ScreenManager();
             var audioManager = new AudioManager();
-
-            var _ = new Views.UmaMadoManagerUI(new Core.ViewModels.AxisStandardViewModel(nativeWindowManager, screenManager, audioManager));
+            var versionRepository = new VersionRepository();
+            var _ = new Views.UmaMadoManagerUI(new Core.ViewModels.AxisStandardViewModel(nativeWindowManager, screenManager, audioManager, versionRepository));
             Application.Run();
         }
     }

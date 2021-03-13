@@ -25,7 +25,7 @@ namespace UmaMadoManager.Windows.Views
 
             this.Disposable.Add(_VM.Vertical.CombineLatest(_VM.Horizontal).Subscribe((x) =>
             {
-                trayNotifyIcon.Text = $"V => {x.First}: H => {x.Second}";
+                trayNotifyIcon.Text = $"V => {x.First}: H => {x.Second}"; // もうちょいわかりやすく
             }));
 
             var contextMenu = new ContextMenuStrip();
@@ -152,6 +152,16 @@ namespace UmaMadoManager.Windows.Views
                 horizontalSettingMenus,
                 new ToolStripSeparator(),
                 muteSettingMenus,
+                new ToolStripSeparator(),
+                new ToolStripMenuItem("New Version Released").Also(v => {
+                    Disposable.Add(_VM.LatestVersion.Subscribe(version => {
+                        if (version == "") {
+                            v.Visible = false;
+                            return;
+                        }
+                        v.Visible = Assembly.GetExecutingAssembly().GetName().Version.ToString() != version;
+                    }));
+                }),
                 new ToolStripSeparator(),
                 new ToolStripMenuItem("Exit").Also(v => {
                     v.Click += (_, _) => {
