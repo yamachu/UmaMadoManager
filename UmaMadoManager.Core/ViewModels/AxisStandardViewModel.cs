@@ -64,40 +64,32 @@ namespace UmaMadoManager.Core.ViewModels
             Disposable.Add(targetWindowHandle.CombineLatest(
                 MuteCondition,
                 Observable.CombineLatest(
-                    Observable.FromEventPattern<bool>(nativeWindowManager, nameof(nativeWindowManager.OnForeground)).Select(x => x.EventArgs).StartWith(false),
-                    Observable.FromEventPattern<bool>(nativeWindowManager, nameof(nativeWindowManager.OnMinimized)).Select(x => x.EventArgs).StartWith(false)
-                ).Select(x => {
-                    var first = x[0];
-                    var second = x[1];
-                    return (first, second) switch {
-                        (true, true) => ApplicationState.Minimized,
-                        (false, true) => ApplicationState.Minimized,
-                        (true, false) => ApplicationState.Foreground,
-                        (false, false) => ApplicationState.Background
+                    Observable.FromEventPattern<bool>(nativeWindowManager, nameof(nativeWindowManager.OnForeground))
+                        .Select(x => x.EventArgs.ToDefaultableBooleanLike()).StartWith(DefaultableBooleanLike.Default),
+                    Observable.FromEventPattern<bool>(nativeWindowManager, nameof(nativeWindowManager.OnMinimized))
+                        .Select(x => x.EventArgs.ToDefaultableBooleanLike()).StartWith(DefaultableBooleanLike.Default)
+                ).Select(x =>
+                {
+                    var maybeForeground = x[0];
+                    var maybeMinimized = x[1];
+                    return (maybeForeground, maybeMinimized) switch
+                    {
+                        (DefaultableBooleanLike.Default, DefaultableBooleanLike.Default) => ApplicationState.Foreground,
+                        (DefaultableBooleanLike.Default, DefaultableBooleanLike.True) => ApplicationState.Minimized,
+                        (DefaultableBooleanLike.Default, DefaultableBooleanLike.False) => ApplicationState.Background,
+                        (DefaultableBooleanLike.True, DefaultableBooleanLike.Default) => ApplicationState.Foreground,
+                        (DefaultableBooleanLike.True, DefaultableBooleanLike.True) => ApplicationState.Minimized,
+                        (DefaultableBooleanLike.True, DefaultableBooleanLike.False) => ApplicationState.Foreground,
+                        (DefaultableBooleanLike.False, DefaultableBooleanLike.Default) => ApplicationState.Background,
+                        (DefaultableBooleanLike.False, DefaultableBooleanLike.True) => ApplicationState.Minimized,
+                        (DefaultableBooleanLike.False, DefaultableBooleanLike.False) => ApplicationState.Background
                     };
                 })
             )
             .Subscribe(x =>
             {
                 var (handle, condition, state) = x;
-                switch ((condition, state))
-                {
-                    case (_, ApplicationState.Foreground):
-                        audioManager.SetMute(handle, false);
-                        return;
-                    case (Models.MuteCondition.WhenBackground, ApplicationState.Background):
-                    case (Models.MuteCondition.WhenBackground, ApplicationState.Minimized):
-                        audioManager.SetMute(handle, true);
-                        return;
-                    case (Models.MuteCondition.WhenMinimize, ApplicationState.Minimized):
-                        audioManager.SetMute(handle, true);
-                        return;
-                    case (Models.MuteCondition.WhenMinimize, ApplicationState.Background):
-                        audioManager.SetMute(handle, false);
-                        return;
-                    default:
-                        return;
-                }
+                audioManager.SetMute(handle, condition.ToIsMute(state));
             }));
 
             Disposable.Add(windowRect.CombineLatest(targetWindowHandle, Vertical, Horizontal)
