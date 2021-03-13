@@ -87,7 +87,7 @@ namespace UmaMadoManager.Windows.Views
                 //     }));
                 //     v.CheckOnClick = true;
                 // }),
-                new ToolStripMenuItem("Full height").Also(v => {
+                new ToolStripMenuItem("Full width").Also(v => {
                     this.Disposable.Add(Observable.FromEventPattern(v, nameof(v.Click)).Subscribe(x => {
                         _VM.Horizontal.Value = AxisStandard.Full;
                     }));
