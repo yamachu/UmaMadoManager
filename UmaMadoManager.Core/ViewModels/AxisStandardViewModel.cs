@@ -82,24 +82,7 @@ namespace UmaMadoManager.Core.ViewModels
             .Subscribe(x =>
             {
                 var (handle, condition, state) = x;
-                switch ((condition, state))
-                {
-                    case (_, ApplicationState.Foreground):
-                        audioManager.SetMute(handle, false);
-                        return;
-                    case (Models.MuteCondition.WhenBackground, ApplicationState.Background):
-                    case (Models.MuteCondition.WhenBackground, ApplicationState.Minimized):
-                        audioManager.SetMute(handle, true);
-                        return;
-                    case (Models.MuteCondition.WhenMinimize, ApplicationState.Minimized):
-                        audioManager.SetMute(handle, true);
-                        return;
-                    case (Models.MuteCondition.WhenMinimize, ApplicationState.Background):
-                        audioManager.SetMute(handle, false);
-                        return;
-                    default:
-                        return;
-                }
+                audioManager.SetMute(handle, condition.ToIsMute(state));
             }));
 
             Disposable.Add(windowRect.CombineLatest(targetWindowHandle, Vertical, Horizontal)
