@@ -147,6 +147,20 @@ namespace UmaMadoManager.Windows.Views
                 }),
             });
 
+            Action navigateToHostingSite = () => {
+                var url = "https://yamachu.booth.pm/items/2811984";
+
+                try
+                {
+                    // see: https://brockallen.com/2016/09/24/process-start-for-urls-on-net-core/
+                    System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo("cmd", $"/c start {url}") { CreateNoWindow = true });
+                }
+                catch (Exception e)
+                {
+                    System.Console.WriteLine(e);
+                }
+            };
+
             contextMenu.Items.AddRange(new ToolStripItem[]{
                 verticalSettingMenus,
                 horizontalSettingMenus,
@@ -155,17 +169,7 @@ namespace UmaMadoManager.Windows.Views
                 new ToolStripSeparator(),
                 new ToolStripMenuItem("Help").Also(v => {
                     v.Click += (_, _) => {
-                        var url = "https://yamachu.booth.pm/items/2811984";
-
-                        try
-                        {
-                            // see: https://brockallen.com/2016/09/24/process-start-for-urls-on-net-core/
-                            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo("cmd", $"/c start {url}") { CreateNoWindow = true });
-                        }
-                        catch (Exception e)
-                        {
-                            System.Console.WriteLine(e);
-                        }
+                        navigateToHostingSite();
                     };
                 }),
                 new ToolStripMenuItem("New Version Released").Also(v => {
@@ -176,6 +180,9 @@ namespace UmaMadoManager.Windows.Views
                         }
                         v.Visible = Assembly.GetExecutingAssembly().GetName().Version.ToString() != version;
                     }));
+                    v.Click += (_, _) => {
+                        navigateToHostingSite();
+                    };
                 }),
                 new ToolStripSeparator(),
                 new ToolStripMenuItem("Exit").Also(v => {
