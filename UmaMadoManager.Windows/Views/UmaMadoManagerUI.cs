@@ -178,7 +178,11 @@ namespace UmaMadoManager.Windows.Views
                             v.Visible = false;
                             return;
                         }
-                        v.Visible = Assembly.GetExecutingAssembly().GetName().Version.ToString() != version;
+                        var currentVersionWithoutRevision = Assembly.GetExecutingAssembly().GetName().Version.Let(currentVersion => {
+                            return new Version(currentVersion.Major, currentVersion.Minor, currentVersion.Build);
+                        });
+                        var formattedVersion = Version.Parse(version);
+                        v.Visible = currentVersionWithoutRevision != formattedVersion;
                     }));
                     v.Click += (_, _) => {
                         navigateToHostingSite();
