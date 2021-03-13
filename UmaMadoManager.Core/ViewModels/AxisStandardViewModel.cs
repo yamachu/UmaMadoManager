@@ -18,6 +18,8 @@ namespace UmaMadoManager.Core.ViewModels
 
         public ReactiveProperty<MuteCondition> MuteCondition { get; }
 
+        public ReactiveProperty<string> TargetApplicationName { get; }
+
         private ReadOnlyReactiveProperty<IntPtr> targetWindowHandle;
 
         // FIXME: VMでやることじゃない
@@ -29,12 +31,17 @@ namespace UmaMadoManager.Core.ViewModels
             Vertical = axisStandardSettings.Vertical;
             Horizontal = axisStandardSettings.Horizontal;
             MuteCondition = new ReactiveProperty<MuteCondition>(Models.MuteCondition.Nop);
+            // 他のアプリケーションにも使えるかもしれんなぁということで
+            TargetApplicationName = new ReactiveProperty<string>("umamusume");
 
             // FIXME: PollingじゃなくてGlobalHookとかでやりたい
             targetWindowHandle = Observable.Interval(TimeSpan.FromSeconds(1))
-                .Select(x => nativeWindowManager.GetWindowHandle("umamusume"))
+                .CombineLatest(TargetApplicationName)
+                .Select(x => nativeWindowManager.GetWindowHandle(x.Second))
                 .Distinct()
                 .ToReadOnlyReactiveProperty();
+
+            Disposable.Add(TargetApplicationName.Subscribe(x => nativeWindowManager.SetHook(x)));
 
             var windowRect = targetWindowHandle
                 .CombineLatest(
