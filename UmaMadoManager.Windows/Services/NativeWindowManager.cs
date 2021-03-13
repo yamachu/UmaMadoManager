@@ -16,7 +16,7 @@ namespace UmaMadoManager.Windows.Services
         private Native.Win32API.WinEventProc callback;
 
         public event EventHandler<bool> OnForeground;
-        public event EventHandler OnMinimized;
+        public event EventHandler<bool> OnMinimized;
         public event EventHandler OnMoveOrSizeChanged;
         public event EventHandler OnMessageSent;
 
@@ -52,15 +52,19 @@ namespace UmaMadoManager.Windows.Services
                 case EVENT_SYSTEM_FOREGROUND:
                     OnForeground?.Invoke(this, isTarget);
                     break;
+                case EVENT_SYSTEM_MINIMIZESTART:
+                    OnMinimized?.Invoke(this, true);
+                    return;
                 case EVENT_SYSTEM_MINIMIZEEND:
-                    OnMinimized?.Invoke(this, null);
+                    OnMinimized?.Invoke(this, false);
                     break;
                 case EVENT_SYSTEM_MOVESIZEEND:
                 case EVENT_OBJECT_LOCATIONCHANGE:
                     OnMoveOrSizeChanged?.Invoke(this, null);
                     break;
                 default:
-                    if (isTarget) {
+                    if (isTarget)
+                    {
                         OnMessageSent?.Invoke(this, null);
                     }
                     return;

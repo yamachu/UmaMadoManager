@@ -16,13 +16,19 @@ namespace UmaMadoManager.Core.ViewModels
         public ReactiveProperty<AxisStandard> Vertical { get; }
         public ReactiveProperty<AxisStandard> Horizontal { get; }
 
+        public ReactiveProperty<MuteCondition> MuteCondition { get; }
+
         private ReadOnlyReactiveProperty<IntPtr> targetWindowHandle;
 
         // FIXME: VMでやることじゃない
-        public AxisStandardViewModel(INativeWindowManager nativeWindowManager, IScreenManager screenManager)
+        public AxisStandardViewModel(
+            INativeWindowManager nativeWindowManager,
+            IScreenManager screenManager,
+            IAudioManager audioManager)
         {
             Vertical = axisStandardSettings.Vertical;
             Horizontal = axisStandardSettings.Horizontal;
+            MuteCondition = new ReactiveProperty<MuteCondition>(Models.MuteCondition.Nop);
 
             // FIXME: PollingじゃなくてGlobalHookとかでやりたい
             targetWindowHandle = Observable.Interval(TimeSpan.FromSeconds(1))
@@ -47,6 +53,45 @@ namespace UmaMadoManager.Core.ViewModels
                     }
                     return r;
                 });
+
+            Disposable.Add(targetWindowHandle.CombineLatest(
+                MuteCondition,
+                Observable.CombineLatest(
+                    Observable.FromEventPattern<bool>(nativeWindowManager, nameof(nativeWindowManager.OnForeground)).Select(x => x.EventArgs).StartWith(false),
+                    Observable.FromEventPattern<bool>(nativeWindowManager, nameof(nativeWindowManager.OnMinimized)).Select(x => x.EventArgs).StartWith(false)
+                ).Select(x => {
+                    var first = x[0];
+                    var second = x[1];
+                    return (first, second) switch {
+                        (true, true) => ApplicationState.Minimized,
+                        (false, true) => ApplicationState.Minimized,
+                        (true, false) => ApplicationState.Foreground,
+                        (false, false) => ApplicationState.Background
+                    };
+                })
+            )
+            .Subscribe(x =>
+            {
+                var (handle, condition, state) = x;
+                switch ((condition, state))
+                {
+                    case (_, ApplicationState.Foreground):
+                        audioManager.SetMute(handle, false);
+                        return;
+                    case (Models.MuteCondition.WhenBackground, ApplicationState.Background):
+                    case (Models.MuteCondition.WhenBackground, ApplicationState.Minimized):
+                        audioManager.SetMute(handle, true);
+                        return;
+                    case (Models.MuteCondition.WhenMinimize, ApplicationState.Minimized):
+                        audioManager.SetMute(handle, true);
+                        return;
+                    case (Models.MuteCondition.WhenMinimize, ApplicationState.Background):
+                        audioManager.SetMute(handle, false);
+                        return;
+                    default:
+                        return;
+                }
+            }));
 
             Disposable.Add(windowRect.CombineLatest(targetWindowHandle, Vertical, Horizontal)
                 .Where(x => x.Second != IntPtr.Zero)

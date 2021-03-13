@@ -63,6 +63,7 @@ namespace UmaMadoManager.Windows.Native
 
         public const int EVENT_SYSTEM_FOREGROUND = 0x00000003;
         public const int EVENT_SYSTEM_MOVESIZEEND = 0x0000000b;
+        public const int EVENT_SYSTEM_MINIMIZESTART = 0x00000016;
         public const int EVENT_SYSTEM_MINIMIZEEND = 0x00000017;
         public const int EVENT_OBJECT_LOCATIONCHANGE = 0x0000800b;
     }

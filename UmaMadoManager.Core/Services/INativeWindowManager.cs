@@ -11,7 +11,7 @@ namespace UmaMadoManager.Core.Services
         void ResizeWindow(IntPtr hWnd, WindowRect rect);
 
         event EventHandler<bool> OnForeground;
-        event EventHandler OnMinimized;
+        event EventHandler<bool> OnMinimized;
         event EventHandler OnMoveOrSizeChanged;
         event EventHandler OnMessageSent;
     }
