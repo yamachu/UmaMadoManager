@@ -10,7 +10,8 @@ namespace UmaMadoManager.Core.Models
 
         public bool ContainsWindow(WindowRect rect)
         {
-            return WorkingArea.Left <= rect.Left && rect.Left < WorkingArea.Right && WorkingArea.Top <= rect.Top && WorkingArea.Bottom > rect.Bottom;
+            // 含むというよりは左上の頂点がどこにあるかで判定するようにする
+            return WorkingArea.Left <= rect.Left && rect.Left < WorkingArea.Right && WorkingArea.Top <= rect.Top && rect.Top < WorkingArea.Bottom;
         }
 
         public WindowRect MaxContainerbleWindowRect(WindowRect baseRect)
