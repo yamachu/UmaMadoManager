@@ -54,13 +54,28 @@ namespace UmaMadoManager.Windows.Views
                 //     v.CheckOnClick = true;
                 // }),
                 new ToolStripMenuItem("Full height").Also(v => {
-                    this.Disposable.Add(Observable.FromEventPattern(v, nameof(v.Click)).Subscribe(x => {
-                        _VM.Vertical.Value = AxisStandard.Full;
-                    }));
-                    this.Disposable.Add(_VM.Vertical.Subscribe(x => {
-                        v.Checked = x == AxisStandard.Full;
-                    }));
-                    v.CheckOnClick = true;
+                    v.DropDownItems.AddRange(new ToolStripItem[]{
+                        new ToolStripMenuItem("Left Top").Also(vv => {
+                            this.Disposable.Add(Observable.FromEventPattern(vv, nameof(vv.Click)).Subscribe(x => {
+                                _VM.Vertical.Value = AxisStandard.Full;
+                                _VM.WindowFittingStandard.Value = WindowFittingStandard.LeftTop;
+                            }));
+                            this.Disposable.Add(_VM.Vertical.CombineLatest(_VM.WindowFittingStandard).Subscribe(x => {
+                                vv.Checked = x == (AxisStandard.Full, WindowFittingStandard.LeftTop);
+                            }));
+                            vv.CheckOnClick = true;
+                        }),
+                        new ToolStripMenuItem("Right Top").Also(vv => {
+                            this.Disposable.Add(Observable.FromEventPattern(vv, nameof(vv.Click)).Subscribe(x => {
+                                _VM.Vertical.Value = AxisStandard.Full;
+                                _VM.WindowFittingStandard.Value = WindowFittingStandard.RightTop;
+                            }));
+                            this.Disposable.Add(_VM.Vertical.CombineLatest(_VM.WindowFittingStandard).Subscribe(x => {
+                                vv.Checked = x == (AxisStandard.Full, WindowFittingStandard.RightTop);
+                            }));
+                            vv.CheckOnClick = true;
+                        })
+                    });
                 }),
             });
 
