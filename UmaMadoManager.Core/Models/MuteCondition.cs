@@ -15,6 +15,7 @@ namespace UmaMadoManager.Core.Models
         {
             return (self, currentState) switch
             {
+                (MuteCondition.Nop, _) => false,
                 (_, ApplicationState.Foreground) => false,
                 (MuteCondition.WhenBackground, ApplicationState.Background or ApplicationState.Minimized) => true,
                 (MuteCondition.WhenMinimize, ApplicationState.Minimized) => true,
