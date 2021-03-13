@@ -20,18 +20,6 @@ namespace UmaMadoManager.Windows.Services
         public event EventHandler OnMoveOrSizeChanged;
         public event EventHandler OnMessageSent;
 
-        public NativeWindowManager()
-        {
-            callback = WinEventProc;
-            hHook = SetWinEventHook(EVENT_SYSTEM_FOREGROUND, EVENT_OBJECT_LOCATIONCHANGE, IntPtr.Zero, callback, 0, 0, (int)(WinEventFlag.WINEVENT_OUTOFCONTEXT | WinEventFlag.WINEVENT_SKIPOWNPROCESS));
-            var err = Marshal.GetLastWin32Error();
-            if (hHook == IntPtr.Zero)
-            {
-                System.Console.WriteLine("Hook set failed...");
-                System.Console.WriteLine($"error code: {err}");
-            }
-        }
-
         ~NativeWindowManager()
         {
             if (hHook != IntPtr.Zero)
@@ -42,33 +30,54 @@ namespace UmaMadoManager.Windows.Services
             }
         }
 
-        private void WinEventProc(IntPtr hWinEventHook, uint eventType, IntPtr hWnd, int idObject, int idChild, uint dwEventThread, uint dwmsEventTime)
+        public void SetHook(string windowName)
         {
-            GetWindowThreadProcessId(hWnd, out var targetProcessId);
-            var process = Process.GetProcessById((int)targetProcessId);
-            var isTarget = process?.MainWindowTitle == "umamusume";
-            switch (eventType)
+            if (hHook != IntPtr.Zero)
             {
-                case EVENT_SYSTEM_FOREGROUND:
-                    OnForeground?.Invoke(this, isTarget);
-                    break;
-                case EVENT_SYSTEM_MINIMIZESTART:
-                    OnMinimized?.Invoke(this, true);
-                    return;
-                case EVENT_SYSTEM_MINIMIZEEND:
-                    OnMinimized?.Invoke(this, false);
-                    break;
-                case EVENT_SYSTEM_MOVESIZEEND:
-                case EVENT_OBJECT_LOCATIONCHANGE:
-                    OnMoveOrSizeChanged?.Invoke(this, null);
-                    break;
-                default:
-                    if (isTarget)
-                    {
-                        OnMessageSent?.Invoke(this, null);
-                    }
-                    return;
+                UnhookWinEvent(hHook);
+                hHook = IntPtr.Zero;
+                callback = null;
             }
+
+            callback = WinEventProc(windowName);
+            hHook = SetWinEventHook(EVENT_SYSTEM_FOREGROUND, EVENT_OBJECT_LOCATIONCHANGE, IntPtr.Zero, callback, 0, 0, (int)(WinEventFlag.WINEVENT_OUTOFCONTEXT | WinEventFlag.WINEVENT_SKIPOWNPROCESS));
+            var err = Marshal.GetLastWin32Error();
+            if (hHook == IntPtr.Zero)
+            {
+                System.Console.WriteLine("Hook set failed...");
+                System.Console.WriteLine($"error code: {err}");
+            }
+        }
+
+        private Native.Win32API.WinEventProc WinEventProc(string windowName)
+        {
+            return (IntPtr hWinEventHook, uint eventType, IntPtr hWnd, int idObject, int idChild, uint dwEventThread, uint dwmsEventTime) => {
+                GetWindowThreadProcessId(hWnd, out var targetProcessId);
+                var process = Process.GetProcessById((int)targetProcessId);
+                var isTarget = process?.MainWindowTitle == windowName;
+                switch (eventType)
+                {
+                    case EVENT_SYSTEM_FOREGROUND:
+                        OnForeground?.Invoke(this, isTarget);
+                        break;
+                    case EVENT_SYSTEM_MINIMIZESTART:
+                        OnMinimized?.Invoke(this, true);
+                        return;
+                    case EVENT_SYSTEM_MINIMIZEEND:
+                        OnMinimized?.Invoke(this, false);
+                        break;
+                    case EVENT_SYSTEM_MOVESIZEEND:
+                    case EVENT_OBJECT_LOCATIONCHANGE:
+                        OnMoveOrSizeChanged?.Invoke(this, null);
+                        break;
+                    default:
+                        if (isTarget)
+                        {
+                            OnMessageSent?.Invoke(this, null);
+                        }
+                        return;
+                }
+            };
         }
 
         public IntPtr GetWindowHandle(string windowName)
