@@ -116,7 +116,6 @@ namespace UmaMadoManager.Windows.Services
 
         public void ResizeWindow(IntPtr hWnd, WindowRect rect)
         {
-            SetForegroundWindow(hWnd);
             MoveWindow(hWnd, rect.Left, rect.Top, rect.Width, rect.Height, 1);
         }
     }
