@@ -14,6 +14,9 @@ namespace UmaMadoManager.Windows.Views
     {
         private CompositeDisposable Disposable { get; } = new CompositeDisposable();
 
+        private Form VerticalUserPositionSettingModal;
+        private Form HorizontalUserPositionSettingModal;
+
         public UmaMadoManagerUI(AxisStandardViewModel viewModel)
         {
             var _VM = viewModel;
@@ -44,15 +47,20 @@ namespace UmaMadoManager.Windows.Views
                     }));
                     v.CheckOnClick = true;
                 }),
-                // new ToolStripMenuItem("User defined").Also(v => {
-                //     this.Disposable.Add(Observable.FromEventPattern(v, nameof(v.Click)).Subscribe(x => {
-                //         _VM.Vertical.Value = AxisStandard.User;
-                //     }));
-                //     this.Disposable.Add(_VM.Vertical.Subscribe(x => {
-                //         v.Checked = x == AxisStandard.User;
-                //     }));
-                //     v.CheckOnClick = true;
-                // }),
+                new ToolStripMenuItem("User defined").Also(v => {
+                    this.Disposable.Add(Observable.FromEventPattern(v, nameof(v.Click)).Subscribe(x => {
+                        if (!VerticalUserPositionSettingModal.Visible)
+                        {
+                            // 動かせるように
+                            _VM.Vertical.Value = AxisStandard.Application;
+                            VerticalUserPositionSettingModal.Show();
+                        }
+                    }));
+                    this.Disposable.Add(_VM.Vertical.Subscribe(x => {
+                        v.Checked = x == AxisStandard.User;
+                    }));
+                    v.CheckOnClick = true;
+                }),
                 new ToolStripMenuItem("Full height").Also(v => {
                     v.DropDownItems.AddRange(new ToolStripItem[]{
                         new ToolStripMenuItem("Left Top").Also(vv => {
@@ -93,15 +101,19 @@ namespace UmaMadoManager.Windows.Views
                     }));
                     v.CheckOnClick = true;
                 }),
-                // new ToolStripMenuItem("User defined").Also(v => {
-                //     this.Disposable.Add(Observable.FromEventPattern(v, nameof(v.Click)).Subscribe(x => {
-                //         _VM.Horizontal.Value = AxisStandard.User;
-                //     }));
-                //     this.Disposable.Add(_VM.Horizontal.Subscribe(x => {
-                //         v.Checked = x == AxisStandard.User;
-                //     }));
-                //     v.CheckOnClick = true;
-                // }),
+                new ToolStripMenuItem("User defined").Also(v => {
+                    this.Disposable.Add(Observable.FromEventPattern(v, nameof(v.Click)).Subscribe(x => {
+                        if (!HorizontalUserPositionSettingModal.Visible)
+                        {
+                            _VM.Horizontal.Value = AxisStandard.Application;
+                            HorizontalUserPositionSettingModal.Show();
+                        }
+                    }));
+                    this.Disposable.Add(_VM.Horizontal.Subscribe(x => {
+                        v.Checked = x == AxisStandard.User;
+                    }));
+                    v.CheckOnClick = true;
+                }),
                 new ToolStripMenuItem("Full width").Also(v => {
                     this.Disposable.Add(Observable.FromEventPattern(v, nameof(v.Click)).Subscribe(x => {
                         _VM.Horizontal.Value = AxisStandard.Full;
@@ -198,6 +210,108 @@ namespace UmaMadoManager.Windows.Views
                     };
                 })
             });
+
+            Func<Action<Button>, Action<Button>?, Action<Button>, Form> createUserPositionSettingModal = (
+                Action<Button> onClickUsePrevious,
+                Action<Button> isUsePreviousEnable,
+                Action<Button> onClickUseCurrent
+            ) => new Form().Also(form =>
+            {
+                form.SuspendLayout();
+                form.Size = new Size(300, 100);
+                var layout = new TableLayoutPanel().Also(l =>
+                {
+                    l.SuspendLayout();
+                    l.Dock = DockStyle.Fill;
+                    l.RowCount = 2;
+                    l.ColumnCount = 2;
+                    l.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+                    l.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+                    new Label() { Text = "指定した位置とサイズを使用します" }.Also(c =>
+                    {
+                        c.AutoSize = true;
+                        l.Controls.Add(c, 0, 0);
+                        l.SetColumnSpan(c, 2);
+                    });
+                    l.Controls.Add(new Button().Also(b =>
+                    {
+                        b.Anchor = AnchorStyles.Left | AnchorStyles.Right | AnchorStyles.Bottom;
+                        b.Text = "元の設定を使用";
+                        onClickUsePrevious(b);
+                        isUsePreviousEnable?.Invoke(b);
+                    }), 0, 1);
+                    l.Controls.Add(new Button().Also(b =>
+                    {
+                        b.Anchor = AnchorStyles.Left | AnchorStyles.Right | AnchorStyles.Bottom;
+                        b.Text = "今の設定を使用";
+                        onClickUseCurrent(b);
+                    }), 1, 1);
+                });
+                form.Controls.Add(layout);
+                layout.AutoSize = true;
+
+                layout.ResumeLayout(false);
+                layout.PerformLayout();
+
+                form.ResumeLayout(false);
+                form.MinimizeBox = false;
+                form.MaximizeBox = false;
+            });
+
+            VerticalUserPositionSettingModal = createUserPositionSettingModal(
+                (v) =>
+                {
+                    this.Disposable.Add(Observable.FromEventPattern(v, nameof(v.Click)).Subscribe(x =>
+                    {
+                        _VM.Vertical.Value = AxisStandard.User;
+                        _VM.UseCurrentVerticalUserSetting.Value = false;
+                        VerticalUserPositionSettingModal.Visible = false;
+                    }));
+                },
+                (v) =>
+                {
+                    this.Disposable.Add(_VM.UserDefinedVerticalWindowRect.Subscribe(x =>
+                    {
+                        v.Enabled = !x.IsEmpty;
+                    }));
+                },
+                (v) =>
+                {
+                    this.Disposable.Add(Observable.FromEventPattern(v, nameof(v.Click)).Subscribe(x =>
+                    {
+                        _VM.Vertical.Value = AxisStandard.User;
+                        _VM.UseCurrentVerticalUserSetting.Value = true;
+                        VerticalUserPositionSettingModal.Visible = false;
+                    }));
+                }
+            );
+            HorizontalUserPositionSettingModal = createUserPositionSettingModal(
+                (v) =>
+                {
+                    this.Disposable.Add(Observable.FromEventPattern(v, nameof(v.Click)).Subscribe(x =>
+                    {
+                        _VM.Horizontal.Value = AxisStandard.User;
+                        _VM.UseCurrentHorizontalUserSetting.Value = false;
+                        HorizontalUserPositionSettingModal.Visible = false;
+                    }));
+                },
+                (v) =>
+                {
+                    this.Disposable.Add(_VM.UserDefinedHorizontalWindowRect.Subscribe(x =>
+                    {
+                        v.Enabled = !x.IsEmpty;
+                    }));
+                },
+                (v) =>
+                {
+                    this.Disposable.Add(Observable.FromEventPattern(v, nameof(v.Click)).Subscribe(x =>
+                    {
+                        _VM.Horizontal.Value = AxisStandard.User;
+                        _VM.UseCurrentHorizontalUserSetting.Value = true;
+                        HorizontalUserPositionSettingModal.Visible = false;
+                    }));
+                }
+            );
 
             trayNotifyIcon.ContextMenuStrip = contextMenu;
         }
