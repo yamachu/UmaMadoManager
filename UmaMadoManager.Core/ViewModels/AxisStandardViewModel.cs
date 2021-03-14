@@ -16,6 +16,10 @@ namespace UmaMadoManager.Core.ViewModels
         public ReactiveProperty<AxisStandard> Vertical { get; }
         public ReactiveProperty<AxisStandard> Horizontal { get; }
         public ReactiveProperty<WindowFittingStandard> WindowFittingStandard { get; }
+        public ReactiveProperty<bool> UseCurrentVerticalUserSetting { get; }
+        public ReactiveProperty<bool> UseCurrentHorizontalUserSetting { get; }
+        public ReactiveProperty<WindowRect> UserDefinedVerticalWindowRect { get; }
+        public ReactiveProperty<WindowRect> UserDefinedHorizontalWindowRect { get; }
 
         public ReactiveProperty<MuteCondition> MuteCondition { get; }
 
@@ -40,6 +44,11 @@ namespace UmaMadoManager.Core.ViewModels
             // 他のアプリケーションにも使えるかもしれんなぁということで
             TargetApplicationName = new ReactiveProperty<string>("umamusume");
             LatestVersion = new ReactiveProperty<string>("");
+
+            UseCurrentVerticalUserSetting = new ReactiveProperty<bool>(false);
+            UseCurrentHorizontalUserSetting = new ReactiveProperty<bool>(false);
+            UserDefinedVerticalWindowRect = new ReactiveProperty<WindowRect>(WindowRect.Empty);
+            UserDefinedHorizontalWindowRect = new ReactiveProperty<WindowRect>(WindowRect.Empty);
 
             // FIXME: PollingじゃなくてGlobalHookとかでやりたい
             targetWindowHandle = Observable.Interval(TimeSpan.FromSeconds(1))
@@ -67,6 +76,48 @@ namespace UmaMadoManager.Core.ViewModels
                     }
                     return r;
                 });
+
+            UseCurrentHorizontalUserSetting.Subscribe(x =>
+            {
+                if (!x)
+                {
+                    return;
+                }
+                var handle = targetWindowHandle.Value;
+                if (handle == IntPtr.Zero)
+                {
+                    return;
+                }
+                var r = nativeWindowManager.GetWindowRect(handle);
+                if (r.IsEmpty)
+                {
+                    UserDefinedHorizontalWindowRect.Value = WindowRect.Empty;
+                    return;
+                }
+                UserDefinedHorizontalWindowRect.Value = r;
+                return;
+            });
+
+            UseCurrentVerticalUserSetting.Subscribe(x =>
+            {
+                if (!x)
+                {
+                    return;
+                }
+                var handle = targetWindowHandle.Value;
+                if (handle == IntPtr.Zero)
+                {
+                    return;
+                }
+                var r = nativeWindowManager.GetWindowRect(handle);
+                if (r.IsEmpty)
+                {
+                    UserDefinedVerticalWindowRect.Value = WindowRect.Empty;
+                    return;
+                }
+                UserDefinedVerticalWindowRect.Value = r;
+                return;
+            });
 
             Disposable.Add(targetWindowHandle.CombineLatest(
                 MuteCondition,
@@ -99,7 +150,7 @@ namespace UmaMadoManager.Core.ViewModels
                 audioManager.SetMute(handle, condition.ToIsMute(state));
             }));
 
-            Disposable.Add(windowRect.DistinctUntilChanged().CombineLatest(targetWindowHandle, Vertical.CombineLatest(WindowFittingStandard), Horizontal)
+            Disposable.Add(windowRect.DistinctUntilChanged().CombineLatest(targetWindowHandle, Vertical.CombineLatest(WindowFittingStandard, UserDefinedVerticalWindowRect), Horizontal.CombineLatest(UserDefinedHorizontalWindowRect))
                 .Where(x => x.Second != IntPtr.Zero)
                 .Subscribe(x =>
                 {
@@ -114,39 +165,55 @@ namespace UmaMadoManager.Core.ViewModels
                     switch (x.First.Direction)
                     {
                         case WindowDirection.Horizontal:
-                            if (x.Fourth == AxisStandard.Application)
                             {
+                                var (axis, userDefinedRect) = x.Fourth;
+                                if (axis == AxisStandard.Application)
+                                {
+                                    return;
+                                }
+                                if (axis == AxisStandard.User)
+                                {
+                                    if (userDefinedRect.IsEmpty)
+                                    {
+                                        return;
+                                    }
+                                    nativeWindowManager.ResizeWindow(x.Second, userDefinedRect);
+                                    return;
+                                }
+
+                                // Now supports Full Only
+                                nativeWindowManager.ResizeWindow(x.Second, containsScreen.Value.MaxContainerbleWindowRect(x.First, Models.WindowFittingStandard.LeftTop /* 使わないので固定値 */));
+
                                 return;
                             }
-                            if (x.Fourth == AxisStandard.User)
-                            {
-                                return;
-                            }
-
-                            // Now supports Full Only
-                            nativeWindowManager.ResizeWindow(x.Second, containsScreen.Value.MaxContainerbleWindowRect(x.First, Models.WindowFittingStandard.LeftTop /* 使わないので固定値 */));
-
-                            return;
                         case WindowDirection.Vertical:
-                            var (axis, fittingStandard) = x.Third;
-                            if (axis == AxisStandard.Application)
                             {
-                                return;
+                                var (axis, fittingStandard, userDefinedRect) = x.Third;
+                                switch (axis)
+                                {
+                                    case AxisStandard.Application:
+                                        return;
+                                    case AxisStandard.User:
+                                        {
+                                            if (userDefinedRect.IsEmpty)
+                                            {
+                                                return;
+                                            }
+                                            nativeWindowManager.ResizeWindow(x.Second, userDefinedRect);
+                                            return;
+                                        }
+                                    case AxisStandard.Full:
+                                        nativeWindowManager.ResizeWindow(x.Second, containsScreen.Value.MaxContainerbleWindowRect(x.First, fittingStandard));
+                                        return;
+                                    default:
+                                        return;
+                                }
                             }
-                            if (axis == AxisStandard.User)
-                            {
-                                return;
-                            }
-
-                            // Now supports Full Only
-                            nativeWindowManager.ResizeWindow(x.Second, containsScreen.Value.MaxContainerbleWindowRect(x.First, fittingStandard));
-
-                            return;
                     }
                 }));
 
             Disposable.Add(
-                Observable.FromAsync<string>(() => versionRepository.GetLatestVersion()).Subscribe(v => LatestVersion.Value = v) 
+                Observable.FromAsync<string>(() => versionRepository.GetLatestVersion()).Subscribe(v => LatestVersion.Value = v)
             );
         }
     }
