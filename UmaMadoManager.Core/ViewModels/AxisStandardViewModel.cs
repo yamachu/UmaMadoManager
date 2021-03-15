@@ -27,6 +27,7 @@ namespace UmaMadoManager.Core.ViewModels
         public ReactiveProperty<string> TargetApplicationName { get; }
 
         public ReactiveProperty<string> LatestVersion { get; }
+        public ReactiveProperty<bool> IsMostTop { get; }
 
         private ReadOnlyReactiveProperty<IntPtr> targetWindowHandle;
 
@@ -64,6 +65,7 @@ namespace UmaMadoManager.Core.ViewModels
             UseCurrentHorizontalUserSetting = BindSettings(settings.UseCurrentHorizontalUserSetting, nameof(settings.UseCurrentHorizontalUserSetting), ReactivePropertyMode.RaiseLatestValueOnSubscribe);
             UserDefinedVerticalWindowRect = BindSettings(settings.UserDefinedVerticalWindowRect, nameof(settings.UserDefinedVerticalWindowRect));
             UserDefinedHorizontalWindowRect = BindSettings(settings.UserDefinedHorizontalWindowRect, nameof(settings.UserDefinedHorizontalWindowRect));
+            IsMostTop = BindSettings(settings.IsMostTop, nameof(settings.IsMostTop));
 
             // FIXME: PollingじゃなくてGlobalHookとかでやりたい
             targetWindowHandle = Observable.Interval(TimeSpan.FromSeconds(1))
@@ -230,6 +232,11 @@ namespace UmaMadoManager.Core.ViewModels
             Disposable.Add(
                 Observable.FromAsync<string>(() => versionRepository.GetLatestVersion()).Subscribe(v => LatestVersion.Value = v)
             );
+
+            Disposable.Add(targetWindowHandle.Where(x => x != IntPtr.Zero).CombineLatest(IsMostTop).Subscribe(x => {
+                var (handle, doTop) = x;
+                nativeWindowManager.SetTopMost(handle, doTop);
+            }));
 
             OnExit = () =>
             {
