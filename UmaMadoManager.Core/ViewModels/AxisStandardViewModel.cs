@@ -84,14 +84,15 @@ namespace UmaMadoManager.Core.ViewModels
                 {
                     if (x.First == IntPtr.Zero)
                     {
-                        return WindowRect.Empty;
+                        return (WindowRect.Empty, WindowRect.Empty);
                     }
-                    var r = nativeWindowManager.GetWindowRect(x.First);
+                    var windowClientRectPair = nativeWindowManager.GetWindowRect(x.First);
+                    var (r, _) = windowClientRectPair;
                     if (r.IsEmpty)
                     {
-                        return WindowRect.Empty;
+                        return (WindowRect.Empty, WindowRect.Empty);
                     }
-                    return r;
+                    return windowClientRectPair;
                 });
 
             Disposable.Add(UseCurrentHorizontalUserSetting.Subscribe(x =>
@@ -105,7 +106,7 @@ namespace UmaMadoManager.Core.ViewModels
                 {
                     return;
                 }
-                var r = nativeWindowManager.GetWindowRect(handle);
+                var (r, _) = nativeWindowManager.GetWindowRect(handle);
                 if (r.IsEmpty)
                 {
                     UserDefinedHorizontalWindowRect.Value = WindowRect.Empty;
@@ -126,7 +127,7 @@ namespace UmaMadoManager.Core.ViewModels
                 {
                     return;
                 }
-                var r = nativeWindowManager.GetWindowRect(handle);
+                var (r, _) = nativeWindowManager.GetWindowRect(handle);
                 if (r.IsEmpty)
                 {
                     UserDefinedVerticalWindowRect.Value = WindowRect.Empty;
@@ -172,36 +173,40 @@ namespace UmaMadoManager.Core.ViewModels
                 .Subscribe(x =>
                 {
                     var containsScreen = screenManager.GetScreens()
-                        .Where(s => s.ContainsWindow(x.First))
+                        .Where(s => s.ContainsWindow(x.First.Item1))
                         .Cast<Screen?>()
                         .FirstOrDefault();
                     if (containsScreen == null)
                     {
                         return;
                     }
-                    switch (x.First.Direction)
+                    switch (x.First.Item1.Direction)
                     {
                         case WindowDirection.Horizontal:
                             {
                                 var (axis, userDefinedRect) = x.Fourth;
-                                if (axis == AxisStandard.Application)
+                                switch (axis)
                                 {
-                                    return;
-                                }
-                                if (axis == AxisStandard.User)
-                                {
-                                    if (userDefinedRect.IsEmpty)
-                                    {
+                                    case AxisStandard.Application:
                                         return;
-                                    }
-                                    nativeWindowManager.ResizeWindow(x.Second, userDefinedRect);
-                                    return;
+                                    case AxisStandard.User:
+                                        {
+                                            if (userDefinedRect.IsEmpty)
+                                            {
+                                                return;
+                                            }
+                                            nativeWindowManager.ResizeWindow(x.Second, userDefinedRect);
+                                            return;
+                                        }
+                                    case AxisStandard.Full:
+                                        {
+                                            var nextSize = containsScreen.Value.MaxContainerbleWindowRect(x.First.Item1, x.First.Item2, Models.WindowFittingStandard.LeftTop /* 使わないので固定値 */);
+                                            nativeWindowManager.ResizeWindow(x.Second, nextSize);
+                                            return;
+                                        }
+                                    default:
+                                        return;
                                 }
-
-                                // Now supports Full Only
-                                nativeWindowManager.ResizeWindow(x.Second, containsScreen.Value.MaxContainerbleWindowRect(x.First, Models.WindowFittingStandard.LeftTop /* 使わないので固定値 */));
-
-                                return;
                             }
                         case WindowDirection.Vertical:
                             {
@@ -220,8 +225,11 @@ namespace UmaMadoManager.Core.ViewModels
                                             return;
                                         }
                                     case AxisStandard.Full:
-                                        nativeWindowManager.ResizeWindow(x.Second, containsScreen.Value.MaxContainerbleWindowRect(x.First, fittingStandard));
-                                        return;
+                                        {
+                                            var nextSize = containsScreen.Value.MaxContainerbleWindowRect(x.First.Item1, x.First.Item2, fittingStandard);
+                                            nativeWindowManager.ResizeWindow(x.Second, nextSize);
+                                            return;
+                                        }
                                     default:
                                         return;
                                 }
@@ -233,8 +241,9 @@ namespace UmaMadoManager.Core.ViewModels
                 Observable.FromAsync<string>(() => versionRepository.GetLatestVersion()).Subscribe(v => LatestVersion.Value = v)
             );
 
-            Disposable.Add(targetWindowHandle.Where(x => x != IntPtr.Zero).CombineLatest(IsMostTop).Subscribe(x => {
-                var (handle, doTop) = x;
+            Disposable.Add(targetWindowHandle.Where(x => x != IntPtr.Zero).CombineLatest(IsMostTop, windowRect.DistinctUntilChanged()).Subscribe(x =>
+            {
+                var (handle, doTop, _) = x;
                 nativeWindowManager.SetTopMost(handle, doTop);
             }));
 
