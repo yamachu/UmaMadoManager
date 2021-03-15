@@ -159,7 +159,8 @@ namespace UmaMadoManager.Windows.Views
                 }),
             });
 
-            Action navigateToHostingSite = () => {
+            Action navigateToHostingSite = () =>
+            {
                 var url = "https://yamachu.booth.pm/items/2811984";
 
                 try
@@ -263,8 +264,8 @@ namespace UmaMadoManager.Windows.Views
                 {
                     this.Disposable.Add(Observable.FromEventPattern(v, nameof(v.Click)).Subscribe(x =>
                     {
-                        _VM.Vertical.Value = AxisStandard.User;
                         _VM.UseCurrentVerticalUserSetting.Value = false;
+                        _VM.Vertical.Value = AxisStandard.User;
                         VerticalUserPositionSettingModal.Visible = false;
                     }));
                 },
@@ -279,8 +280,8 @@ namespace UmaMadoManager.Windows.Views
                 {
                     this.Disposable.Add(Observable.FromEventPattern(v, nameof(v.Click)).Subscribe(x =>
                     {
-                        _VM.Vertical.Value = AxisStandard.User;
                         _VM.UseCurrentVerticalUserSetting.Value = true;
+                        _VM.Vertical.Value = AxisStandard.User;
                         VerticalUserPositionSettingModal.Visible = false;
                     }));
                 }
@@ -290,8 +291,8 @@ namespace UmaMadoManager.Windows.Views
                 {
                     this.Disposable.Add(Observable.FromEventPattern(v, nameof(v.Click)).Subscribe(x =>
                     {
-                        _VM.Horizontal.Value = AxisStandard.User;
                         _VM.UseCurrentHorizontalUserSetting.Value = false;
+                        _VM.Horizontal.Value = AxisStandard.User;
                         HorizontalUserPositionSettingModal.Visible = false;
                     }));
                 },
@@ -306,14 +307,19 @@ namespace UmaMadoManager.Windows.Views
                 {
                     this.Disposable.Add(Observable.FromEventPattern(v, nameof(v.Click)).Subscribe(x =>
                     {
-                        _VM.Horizontal.Value = AxisStandard.User;
                         _VM.UseCurrentHorizontalUserSetting.Value = true;
+                        _VM.Horizontal.Value = AxisStandard.User;
                         HorizontalUserPositionSettingModal.Visible = false;
                     }));
                 }
             );
 
             trayNotifyIcon.ContextMenuStrip = contextMenu;
+
+            Application.ApplicationExit += (_, e) =>
+            {
+                _VM.OnExit();
+            };
         }
     }
 }
