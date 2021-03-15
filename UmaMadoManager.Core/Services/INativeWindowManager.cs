@@ -10,6 +10,7 @@ namespace UmaMadoManager.Core.Services
         WindowRect GetWindowRect(IntPtr hWnd);
         void ResizeWindow(IntPtr hWnd, WindowRect rect);
         void SetHook(string windowName);
+        void SetTopMost(IntPtr hWnd, bool doTop);
 
         event EventHandler<bool> OnForeground;
         event EventHandler<bool> OnMinimized;

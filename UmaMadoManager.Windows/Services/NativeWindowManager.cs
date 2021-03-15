@@ -118,5 +118,10 @@ namespace UmaMadoManager.Windows.Services
         {
             MoveWindow(hWnd, rect.Left, rect.Top, rect.Width, rect.Height, 1);
         }
+
+        public void SetTopMost(IntPtr hWnd, bool doTop)
+        {
+            SetWindowPos(hWnd, (IntPtr)(doTop ? SetWindowPosInsertAfterFlag.HWND_TOPMOST : SetWindowPosInsertAfterFlag.HWND_NOTOPMOST), 0, 0, 0, 0, SetWindowPosFlags.SWP_NOMOVE | SetWindowPosFlags.SWP_NOSIZE); 
+        }
     }
 }
