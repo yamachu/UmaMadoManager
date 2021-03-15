@@ -51,7 +51,8 @@ namespace UmaMadoManager.Windows.Services
 
         private Native.Win32API.WinEventProc WinEventProc(string windowName)
         {
-            return (IntPtr hWinEventHook, uint eventType, IntPtr hWnd, int idObject, int idChild, uint dwEventThread, uint dwmsEventTime) => {
+            return (IntPtr hWinEventHook, uint eventType, IntPtr hWnd, int idObject, int idChild, uint dwEventThread, uint dwmsEventTime) =>
+            {
                 GetWindowThreadProcessId(hWnd, out var targetProcessId);
                 var process = Process.GetProcessById((int)targetProcessId);
                 var isTarget = process?.MainWindowTitle == windowName;
@@ -94,7 +95,7 @@ namespace UmaMadoManager.Windows.Services
             }
         }
 
-        public WindowRect GetWindowRect(IntPtr hWnd)
+        public (WindowRect window, WindowRect client) GetWindowRect(IntPtr hWnd)
         {
             var p = new WINDOWINFO();
             p.cbSize = Marshal.SizeOf<WINDOWINFO>();
@@ -102,16 +103,22 @@ namespace UmaMadoManager.Windows.Services
 
             if (ret == 0)
             {
-                return WindowRect.Empty;
+                return (WindowRect.Empty, WindowRect.Empty);
             }
 
-            return new WindowRect
+            return (new WindowRect
             {
                 Left = p.rcWindow.left,
                 Top = p.rcWindow.top,
                 Bottom = p.rcWindow.bottom,
                 Right = p.rcWindow.right,
-            };
+            }, new WindowRect
+            {
+                Left = p.rcClient.left,
+                Top = p.rcClient.top,
+                Bottom = p.rcClient.bottom,
+                Right = p.rcClient.right,
+            });
         }
 
         public void ResizeWindow(IntPtr hWnd, WindowRect rect)
@@ -121,7 +128,7 @@ namespace UmaMadoManager.Windows.Services
 
         public void SetTopMost(IntPtr hWnd, bool doTop)
         {
-            SetWindowPos(hWnd, (IntPtr)(doTop ? SetWindowPosInsertAfterFlag.HWND_TOPMOST : SetWindowPosInsertAfterFlag.HWND_NOTOPMOST), 0, 0, 0, 0, SetWindowPosFlags.SWP_NOMOVE | SetWindowPosFlags.SWP_NOSIZE); 
+            SetWindowPos(hWnd, (IntPtr)(doTop ? SetWindowPosInsertAfterFlag.HWND_TOPMOST : SetWindowPosInsertAfterFlag.HWND_NOTOPMOST), 0, 0, 0, 0, SetWindowPosFlags.SWP_NOMOVE | SetWindowPosFlags.SWP_NOSIZE);
         }
     }
 }
