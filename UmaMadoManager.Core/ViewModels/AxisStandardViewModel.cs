@@ -41,6 +41,8 @@ namespace UmaMadoManager.Core.ViewModels
             });
         }
 
+        public Action OnExit;
+
         // FIXME: VMでやることじゃない
         public AxisStandardViewModel(
             INativeWindowManager nativeWindowManager,
@@ -228,6 +230,11 @@ namespace UmaMadoManager.Core.ViewModels
             Disposable.Add(
                 Observable.FromAsync<string>(() => versionRepository.GetLatestVersion()).Subscribe(v => LatestVersion.Value = v)
             );
+
+            OnExit = () =>
+            {
+                settingService.Save();
+            };
         }
     }
 }
