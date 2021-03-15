@@ -79,5 +79,13 @@ namespace UmaMadoManager.Core.Models
             get { return this["WindowFittingStandard"] == null ? WindowFittingStandard.LeftTop : (WindowFittingStandard)this["WindowFittingStandard"]; }
             set { this["WindowFittingStandard"] = value; }
         }
+
+        [System.Configuration.UserScopedSettingAttribute()]
+        [System.Configuration.DefaultSettingValue("false")]
+        public bool IsMostTop
+        {
+            get { return (bool)this["IsMostTop"]; }
+            set { this["IsMostTop"] = value; }
+        }
     }
 }
