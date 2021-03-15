@@ -180,6 +180,18 @@ namespace UmaMadoManager.Windows.Views
                 new ToolStripSeparator(),
                 muteSettingMenus,
                 new ToolStripSeparator(),
+                new ToolStripMenuItem("Extension").Also(v => {
+                    v.DropDownItems.Add(new ToolStripMenuItem("AlwaysTop").Also(vv => {
+                        this.Disposable.Add(Observable.FromEventPattern(vv, nameof(vv.Click)).Subscribe(x => {
+                            _VM.IsMostTop.Value = !_VM.IsMostTop.Value;
+                        }));
+                        this.Disposable.Add(_VM.MuteCondition.Subscribe(x => {
+                            vv.Checked = _VM.IsMostTop.Value;
+                        }));
+                        vv.CheckOnClick = true;
+                    }));
+                }),
+                new ToolStripSeparator(),
                 new ToolStripMenuItem("Help").Also(v => {
                     v.Click += (_, _) => {
                         navigateToHostingSite();
