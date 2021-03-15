@@ -3,6 +3,7 @@ using System.Linq;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using Reactive.Bindings;
+using UmaMadoManager.Core.Extensions;
 using UmaMadoManager.Core.Models;
 using UmaMadoManager.Core.Services;
 
@@ -12,7 +13,7 @@ namespace UmaMadoManager.Core.ViewModels
     {
         private CompositeDisposable Disposable { get; } = new CompositeDisposable();
 
-        private AxisStandardSettings axisStandardSettings = new AxisStandardSettings();
+        private Settings settings;
         public ReactiveProperty<AxisStandard> Vertical { get; }
         public ReactiveProperty<AxisStandard> Horizontal { get; }
         public ReactiveProperty<WindowFittingStandard> WindowFittingStandard { get; }
@@ -29,26 +30,40 @@ namespace UmaMadoManager.Core.ViewModels
 
         private ReadOnlyReactiveProperty<IntPtr> targetWindowHandle;
 
+        private ReactiveProperty<T> BindSettings<T>(T val, string nameofParameter, ReactivePropertyMode mode = ReactivePropertyMode.Default)
+        {
+            return new ReactiveProperty<T>(val, mode).Also(v =>
+            {
+                Disposable.Add(v.Subscribe(vv =>
+                {
+                    typeof(Settings).GetProperty(nameofParameter).SetValue(settings, vv);
+                }));
+            });
+        }
+
+        public Action OnExit;
+
         // FIXME: VMでやることじゃない
         public AxisStandardViewModel(
             INativeWindowManager nativeWindowManager,
             IScreenManager screenManager,
             IAudioManager audioManager,
-            IVersionRepository versionRepository
+            IVersionRepository versionRepository,
+            ISettingService settingService
             )
         {
-            Vertical = axisStandardSettings.Vertical;
-            Horizontal = axisStandardSettings.Horizontal;
-            WindowFittingStandard = new ReactiveProperty<WindowFittingStandard>(Models.WindowFittingStandard.LeftTop);
-            MuteCondition = new ReactiveProperty<MuteCondition>(Models.MuteCondition.Nop);
-            // 他のアプリケーションにも使えるかもしれんなぁということで
-            TargetApplicationName = new ReactiveProperty<string>("umamusume");
+            settings = settingService.Instance();
+            Vertical = BindSettings(settings.Vertical, nameof(settings.Vertical));
+            Horizontal = BindSettings(settings.Horizontal, nameof(settings.Horizontal));
+            WindowFittingStandard = BindSettings(settings.WindowFittingStandard, nameof(settings.WindowFittingStandard));
+            MuteCondition = BindSettings(settings.MuteCondition, nameof(settings.MuteCondition));
+            TargetApplicationName = BindSettings(settings.TargetApplicationName, nameof(TargetApplicationName));
             LatestVersion = new ReactiveProperty<string>("");
 
-            UseCurrentVerticalUserSetting = new ReactiveProperty<bool>(false);
-            UseCurrentHorizontalUserSetting = new ReactiveProperty<bool>(false);
-            UserDefinedVerticalWindowRect = new ReactiveProperty<WindowRect>(WindowRect.Empty);
-            UserDefinedHorizontalWindowRect = new ReactiveProperty<WindowRect>(WindowRect.Empty);
+            UseCurrentVerticalUserSetting = BindSettings(settings.UseCurrentVerticalUserSetting, nameof(settings.UseCurrentVerticalUserSetting), ReactivePropertyMode.RaiseLatestValueOnSubscribe);
+            UseCurrentHorizontalUserSetting = BindSettings(settings.UseCurrentHorizontalUserSetting, nameof(settings.UseCurrentHorizontalUserSetting), ReactivePropertyMode.RaiseLatestValueOnSubscribe);
+            UserDefinedVerticalWindowRect = BindSettings(settings.UserDefinedVerticalWindowRect, nameof(settings.UserDefinedVerticalWindowRect));
+            UserDefinedHorizontalWindowRect = BindSettings(settings.UserDefinedHorizontalWindowRect, nameof(settings.UserDefinedHorizontalWindowRect));
 
             // FIXME: PollingじゃなくてGlobalHookとかでやりたい
             targetWindowHandle = Observable.Interval(TimeSpan.FromSeconds(1))
@@ -77,7 +92,7 @@ namespace UmaMadoManager.Core.ViewModels
                     return r;
                 });
 
-            UseCurrentHorizontalUserSetting.Subscribe(x =>
+            Disposable.Add(UseCurrentHorizontalUserSetting.Subscribe(x =>
             {
                 if (!x)
                 {
@@ -96,9 +111,9 @@ namespace UmaMadoManager.Core.ViewModels
                 }
                 UserDefinedHorizontalWindowRect.Value = r;
                 return;
-            });
+            }));
 
-            UseCurrentVerticalUserSetting.Subscribe(x =>
+            Disposable.Add(UseCurrentVerticalUserSetting.Subscribe(x =>
             {
                 if (!x)
                 {
@@ -117,7 +132,7 @@ namespace UmaMadoManager.Core.ViewModels
                 }
                 UserDefinedVerticalWindowRect.Value = r;
                 return;
-            });
+            }));
 
             Disposable.Add(targetWindowHandle.CombineLatest(
                 MuteCondition,
@@ -215,6 +230,11 @@ namespace UmaMadoManager.Core.ViewModels
             Disposable.Add(
                 Observable.FromAsync<string>(() => versionRepository.GetLatestVersion()).Subscribe(v => LatestVersion.Value = v)
             );
+
+            OnExit = () =>
+            {
+                settingService.Save();
+            };
         }
     }
 }
