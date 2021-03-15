@@ -7,7 +7,7 @@ namespace UmaMadoManager.Core.Services
     public interface INativeWindowManager
     {
         IntPtr GetWindowHandle(string windowName);
-        WindowRect GetWindowRect(IntPtr hWnd);
+        (WindowRect window, WindowRect client) GetWindowRect(IntPtr hWnd);
         void ResizeWindow(IntPtr hWnd, WindowRect rect);
         void SetHook(string windowName);
         void SetTopMost(IntPtr hWnd, bool doTop);

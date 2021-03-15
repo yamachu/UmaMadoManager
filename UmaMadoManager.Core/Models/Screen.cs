@@ -11,59 +11,64 @@ namespace UmaMadoManager.Core.Models
         public bool ContainsWindow(WindowRect rect)
         {
             // 含むというよりは左上の頂点がどこにあるかで判定するようにする
-            return WorkingArea.Left <= rect.Left && rect.Left < WorkingArea.Right && WorkingArea.Top <= rect.Top && rect.Top < WorkingArea.Bottom;
+            return Bounds.Left <= rect.Left && rect.Left < Bounds.Right && Bounds.Top <= rect.Top && rect.Top < Bounds.Bottom;
         }
 
-        public WindowRect MaxContainerbleWindowRect(WindowRect baseRect, WindowFittingStandard fittingStandard)
+        public WindowRect MaxContainerbleWindowRect(WindowRect windowRect, WindowRect clientRect, WindowFittingStandard fittingStandard)
         {
-            var workingAreaRatio = (double)WorkingArea.Height / WorkingArea.Width;
-            switch (baseRect.Direction)
+            var marginHeight = (clientRect.Top - windowRect.Top) + (windowRect.Bottom - clientRect.Bottom);
+            var marginWidth = (clientRect.Left - windowRect.Left) + (windowRect.Right - clientRect.Right);
+            var workingAreaRatio = (double)(WorkingArea.Height - marginHeight) / (WorkingArea.Width - marginWidth);
+            switch (windowRect.Direction)
             {
                 case WindowDirection.Horizontal:
-                    if (workingAreaRatio > baseRect.AspectRatio)
+                    if (workingAreaRatio >= windowRect.AspectRatio)
                     {
-                        var baseLength = (double)WorkingArea.Width / baseRect.Width;
+                        var nextClientWidth = WorkingArea.Width - marginWidth;
+                        var nextClientHeight = clientRect.AspectRatio * nextClientWidth;
                         return new WindowRect
                         {
                             Left = WorkingArea.Left,
                             Top = WorkingArea.Top,
                             Right = WorkingArea.Right,
-                            Bottom = (int)Math.Floor(baseRect.Height * baseLength) + WorkingArea.Top,
+                            Bottom = WorkingArea.Top + (int)nextClientHeight + marginHeight,
                         };
                     }
                     else
                     {
-                        var baseLength = (double)WorkingArea.Height / baseRect.Height;
+                        var nextClientHeight = WorkingArea.Bottom - WorkingArea.Top - marginHeight;
+                        var nextClientWidth = nextClientHeight / clientRect.AspectRatio;
                         return new WindowRect
                         {
                             Left = WorkingArea.Left,
                             Top = WorkingArea.Top,
-                            Right = (int)Math.Floor(baseRect.Width * baseLength) + WorkingArea.Left,
+                            Right = WorkingArea.Left + (int)(nextClientWidth) + marginWidth,
                             Bottom = WorkingArea.Bottom,
                         };
                     }
                 case WindowDirection.Vertical:
-                    if (workingAreaRatio < baseRect.AspectRatio)
+                    if (workingAreaRatio < windowRect.AspectRatio)
                     {
-                        var baseLength = (double)WorkingArea.Height / baseRect.Height;
-                        var nextWidth = (int)Math.Floor(baseRect.Width * baseLength);
+                        var nextClientHeight = WorkingArea.Height - marginHeight;
+                        var nextClientWidth = nextClientHeight / clientRect.AspectRatio;
                         return new WindowRect
                         {
-                            Left = fittingStandard == WindowFittingStandard.LeftTop ? WorkingArea.Left : WorkingArea.Right - nextWidth,
+                            Left = fittingStandard == WindowFittingStandard.LeftTop ? WorkingArea.Left : WorkingArea.Right - (int)nextClientWidth - marginWidth,
                             Top = WorkingArea.Top,
-                            Right = fittingStandard == WindowFittingStandard.LeftTop ? WorkingArea.Left + nextWidth : WorkingArea.Right,
+                            Right = fittingStandard == WindowFittingStandard.LeftTop ? WorkingArea.Left + (int)nextClientWidth + marginWidth : WorkingArea.Right,
                             Bottom = WorkingArea.Bottom,
                         };
                     }
                     else
                     {
-                        var baseLength = (double)WorkingArea.Width / baseRect.Width;
+                        var nextClientWidth = WorkingArea.Width - marginWidth;
+                        var nextClientHeight = clientRect.AspectRatio * nextClientWidth;
                         return new WindowRect
                         {
                             Left = WorkingArea.Left,
                             Top = WorkingArea.Top,
                             Right = WorkingArea.Right,
-                            Bottom = (int)Math.Floor(baseRect.Height * baseLength) + WorkingArea.Top,
+                            Bottom = WorkingArea.Top + (int)nextClientHeight + marginHeight,
                         };
                     }
                 default:
