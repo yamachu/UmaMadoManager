@@ -24,5 +24,10 @@ namespace UmaMadoManager.Core.Models
         public bool IsEmpty => Left == -1 && Top == -1 && Right == -1 && Bottom == -1;
 
         public WindowDirection Direction => (Right - Left) > (Bottom - Top) ? WindowDirection.Horizontal : WindowDirection.Vertical;
+
+        public override string ToString()
+        {
+            return $"Left: {Left}, Top: {Top}, Right: {Right}, Bottom: {Bottom}";
+        }
     }
 }
