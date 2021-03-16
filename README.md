@@ -27,6 +27,11 @@ GitHub Release上でも今後配布予定ですが、それまでは上記リン
 UmaMadoManager.Coreのみの開発であればmacOSでも開発が可能となっています。
 UmaMadoManager.Windowsの開発を行う場合はWindows環境が必要です。
 
+### Debugビルドなどを行う場合
+
+厳密名を使用してアプリケーションに署名を行っているため、署名キーが必要となります。
+UmaMadoManager.Windowsディレクトリ以下の`keyfile.dev.snk`を`keyfile.snk`にリネームを行うことでUmaMadoManager.Windowsのビルドを行うことが出来ます。
+
 ### リリース時のコマンド
 
 ```
