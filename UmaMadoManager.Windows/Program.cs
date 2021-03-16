@@ -1,7 +1,9 @@
 using System;
+using System.Reflection;
 using System.Windows.Forms;
 using UmaMadoManager.Windows.Services;
 
+[assembly:AssemblyKeyFileAttribute("keyfile.snk")]
 namespace UmaMadoManager.Windows
 {
     static class Program
