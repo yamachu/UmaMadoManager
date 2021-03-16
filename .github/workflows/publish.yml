@@ -1,0 +1,39 @@
+# ref: https://github.com/actions/starter-workflows/blob/b2e786d4e9af21f57ab07c1bc7231ed867f7675f/ci/dotnet-desktop.yml
+name: Publish
+
+on:  
+  push:
+    tags:
+      - 'windows-*'
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 5.0.x
+    - name: Restore dependencies
+      run: dotnet restore
+    - name: Decode the pfx
+      run: |
+        $snk_cert_byte = [System.Convert]::FromBase64String("${{ secrets.Base64_Encoded_snk }}")
+        [IO.File]::WriteAllBytes("UmaMadoManager.Windows/keyfile.snk", $snk_cert_byte)
+
+    - name: Build
+      run: |
+        $out_file = "${{ github.ref }}".split("/")[-1].replace("windows", "UmaMadoManager")
+        $out_dir = "publish/" + ${out_file} # zipとかするときは便利だけど今回はいいかな
+        dotnet publish -c Release -o $out_file UmaMadoManager.Windows 
+
+    - name: Remove the pfx
+      run: Remove-Item -path UmaMadoManager.Windows/keyfile.snk
+
+    - name: Upload built exe
+      uses: actions/upload-artifact@v2
+      with:
+        name: UmaMadoManager.Windows
+        path: UmaMadoManager-*
