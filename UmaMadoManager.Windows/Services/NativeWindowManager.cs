@@ -62,9 +62,11 @@ namespace UmaMadoManager.Windows.Services
                         OnForeground?.Invoke(this, isTarget);
                         break;
                     case EVENT_SYSTEM_MINIMIZESTART:
+                        if (!isTarget) return;
                         OnMinimized?.Invoke(this, true);
                         return;
                     case EVENT_SYSTEM_MINIMIZEEND:
+                        if (!isTarget) return;
                         OnMinimized?.Invoke(this, false);
                         break;
                     case EVENT_SYSTEM_MOVESIZEEND:
