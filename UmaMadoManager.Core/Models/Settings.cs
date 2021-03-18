@@ -87,5 +87,13 @@ namespace UmaMadoManager.Core.Models
             get { return (bool)this["IsMostTop"]; }
             set { this["IsMostTop"] = value; }
         }
+
+        [System.Configuration.UserScopedSettingAttribute()]
+        [System.Configuration.DefaultSettingValue("false")]
+        public bool IsRemoveBorder
+        {
+            get { return (bool)this["IsRemoveBorder"]; }
+            set { this["IsRemoveBorder"] = value; }
+        }
     }
 }

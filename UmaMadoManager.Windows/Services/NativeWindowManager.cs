@@ -19,6 +19,7 @@ namespace UmaMadoManager.Windows.Services
         public event EventHandler<bool> OnMinimized;
         public event EventHandler OnMoveOrSizeChanged;
         public event EventHandler OnMessageSent;
+        public event EventHandler OnBorderChanged;
 
         ~NativeWindowManager()
         {
@@ -73,6 +74,11 @@ namespace UmaMadoManager.Windows.Services
                     case EVENT_OBJECT_LOCATIONCHANGE:
                     if (!isTarget) return;
                         OnMoveOrSizeChanged?.Invoke(this, null);
+                        break;
+                    case EVENT_OBJECT_REORDER:
+                        if (!isTarget) return;
+                        if (idObject != 0 /* WindowObjId*/) return;
+                        OnBorderChanged?.Invoke(this, null);
                         break;
                     default:
                         if (isTarget)
@@ -132,6 +138,15 @@ namespace UmaMadoManager.Windows.Services
         public void SetTopMost(IntPtr hWnd, bool doTop)
         {
             SetWindowPos(hWnd, (IntPtr)(doTop ? SetWindowPosInsertAfterFlag.HWND_TOPMOST : SetWindowPosInsertAfterFlag.HWND_NOTOPMOST), 0, 0, 0, 0, SetWindowPosFlags.SWP_NOMOVE | SetWindowPosFlags.SWP_NOSIZE);
+        }
+
+        public void RemoveBorder(IntPtr hWnd, bool doRemove)
+        {
+            var currentStyle = (WindowStyle)GetWindowLong(hWnd, -16);
+            var borderStyle = (WindowStyle.WS_CAPTION | WindowStyle.WS_THICKFRAME | WindowStyle.WS_MINIMIZEBOX | WindowStyle.WS_MAXIMIZEBOX | WindowStyle.WS_SYSMENU);
+            var nextStyle = doRemove ? currentStyle & ~borderStyle : currentStyle | borderStyle;
+            SetWindowLong(hWnd, -16, (int)nextStyle);
+            SetWindowPos(hWnd, IntPtr.Zero, 0, 0, 0, 0, SetWindowPosFlags.SWP_FRAMECHANGED | SetWindowPosFlags.SWP_NOMOVE | SetWindowPosFlags.SWP_NOSIZE | SetWindowPosFlags.SWP_NOZORDER | SetWindowPosFlags.SWP_NOOWNERZORDER);
         }
     }
 }

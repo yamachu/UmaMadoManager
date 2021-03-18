@@ -29,6 +29,8 @@ namespace UmaMadoManager.Core.ViewModels
         public ReactiveProperty<string> LatestVersion { get; }
         public ReactiveProperty<bool> IsMostTop { get; }
 
+        public ReactiveProperty<bool> IsRemoveBorder { get; }
+
         private ReadOnlyReactiveProperty<IntPtr> targetWindowHandle;
 
         private ReactiveProperty<T> BindSettings<T>(T val, string nameofParameter, ReactivePropertyMode mode = ReactivePropertyMode.Default)
@@ -66,6 +68,7 @@ namespace UmaMadoManager.Core.ViewModels
             UserDefinedVerticalWindowRect = BindSettings(settings.UserDefinedVerticalWindowRect, nameof(settings.UserDefinedVerticalWindowRect));
             UserDefinedHorizontalWindowRect = BindSettings(settings.UserDefinedHorizontalWindowRect, nameof(settings.UserDefinedHorizontalWindowRect));
             IsMostTop = BindSettings(settings.IsMostTop, nameof(settings.IsMostTop));
+            IsRemoveBorder = BindSettings(settings.IsRemoveBorder, nameof(settings.IsRemoveBorder));
 
             // FIXME: PollingじゃなくてGlobalHookとかでやりたい
             targetWindowHandle = Observable.Interval(TimeSpan.FromSeconds(1))
@@ -76,9 +79,13 @@ namespace UmaMadoManager.Core.ViewModels
 
             Disposable.Add(TargetApplicationName.Subscribe(x => nativeWindowManager.SetHook(x)));
 
+            var observableBorderChanged = Observable.FromEventPattern(nativeWindowManager, nameof(nativeWindowManager.OnBorderChanged)).StartWith(new object[] { null });
+            var observableOnMoveChanged = Observable.FromEventPattern(nativeWindowManager, nameof(nativeWindowManager.OnMoveOrSizeChanged)).Throttle(TimeSpan.FromMilliseconds(200)).StartWith(new object[] { null });
+
             var windowRect = targetWindowHandle
                 .CombineLatest(
-                    Observable.FromEventPattern(nativeWindowManager, nameof(nativeWindowManager.OnMoveOrSizeChanged))
+                    observableOnMoveChanged,
+                    observableBorderChanged.Delay(TimeSpan.FromMilliseconds(500))
                 )
                 .Select(x =>
                 {
@@ -168,7 +175,7 @@ namespace UmaMadoManager.Core.ViewModels
                 audioManager.SetMute(handle, condition.ToIsMute(state));
             }));
 
-            Disposable.Add(windowRect.DistinctUntilChanged().CombineLatest(targetWindowHandle, Vertical.CombineLatest(WindowFittingStandard, UserDefinedVerticalWindowRect), Horizontal.CombineLatest(UserDefinedHorizontalWindowRect))
+            Disposable.Add(windowRect.DistinctUntilChanged().CombineLatest(targetWindowHandle, Vertical.CombineLatest(WindowFittingStandard, UserDefinedVerticalWindowRect), Horizontal.CombineLatest(UserDefinedHorizontalWindowRect), IsRemoveBorder)
                 .Where(x => x.Second != IntPtr.Zero)
                 .Subscribe(x =>
                 {
@@ -188,9 +195,11 @@ namespace UmaMadoManager.Core.ViewModels
                                 switch (axis)
                                 {
                                     case AxisStandard.Application:
+                                        nativeWindowManager.RemoveBorder(x.Second, false);
                                         return;
                                     case AxisStandard.User:
                                         {
+                                            nativeWindowManager.RemoveBorder(x.Second, false);
                                             if (userDefinedRect.IsEmpty)
                                             {
                                                 return;
@@ -200,7 +209,8 @@ namespace UmaMadoManager.Core.ViewModels
                                         }
                                     case AxisStandard.Full:
                                         {
-                                            var nextSize = containsScreen.Value.MaxContainerbleWindowRect(x.First.Item1, x.First.Item2, Models.WindowFittingStandard.LeftTop /* 使わないので固定値 */);
+                                            var nextSize = containsScreen.Value.MaxContainerbleWindowRect(x.Fifth ? x.First.Item2 : x.First.Item1, x.First.Item2, Models.WindowFittingStandard.LeftTop /* 使わないので固定値 */);
+                                            nativeWindowManager.RemoveBorder(x.Second, x.Fifth);
                                             nativeWindowManager.ResizeWindow(x.Second, nextSize);
                                             return;
                                         }
@@ -214,9 +224,11 @@ namespace UmaMadoManager.Core.ViewModels
                                 switch (axis)
                                 {
                                     case AxisStandard.Application:
+                                        nativeWindowManager.RemoveBorder(x.Second, false);
                                         return;
                                     case AxisStandard.User:
                                         {
+                                            nativeWindowManager.RemoveBorder(x.Second, false);
                                             if (userDefinedRect.IsEmpty)
                                             {
                                                 return;
@@ -226,7 +238,8 @@ namespace UmaMadoManager.Core.ViewModels
                                         }
                                     case AxisStandard.Full:
                                         {
-                                            var nextSize = containsScreen.Value.MaxContainerbleWindowRect(x.First.Item1, x.First.Item2, fittingStandard);
+                                            var nextSize = containsScreen.Value.MaxContainerbleWindowRect(x.Fifth ? x.First.Item2 : x.First.Item1, x.First.Item2, fittingStandard);
+                                            nativeWindowManager.RemoveBorder(x.Second, x.Fifth);
                                             nativeWindowManager.ResizeWindow(x.Second, nextSize);
                                             return;
                                         }
