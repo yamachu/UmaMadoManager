@@ -17,5 +17,6 @@ namespace UmaMadoManager.Core.Services
         event EventHandler<bool> OnMinimized;
         event EventHandler OnMoveOrSizeChanged;
         event EventHandler OnMessageSent;
+        event EventHandler OnBorderChanged;
     }
 }

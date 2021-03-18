@@ -75,6 +75,7 @@ namespace UmaMadoManager.Windows.Native
         public const int EVENT_SYSTEM_MINIMIZESTART = 0x00000016;
         public const int EVENT_SYSTEM_MINIMIZEEND = 0x00000017;
         public const int EVENT_OBJECT_LOCATIONCHANGE = 0x0000800b;
+        public const int EVENT_OBJECT_REORDER = 0x00008004;
 
         public enum SetWindowPosInsertAfterFlag
         {

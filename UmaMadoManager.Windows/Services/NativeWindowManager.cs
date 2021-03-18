@@ -19,6 +19,7 @@ namespace UmaMadoManager.Windows.Services
         public event EventHandler<bool> OnMinimized;
         public event EventHandler OnMoveOrSizeChanged;
         public event EventHandler OnMessageSent;
+        public event EventHandler OnBorderChanged;
 
         ~NativeWindowManager()
         {
@@ -73,6 +74,11 @@ namespace UmaMadoManager.Windows.Services
                     case EVENT_OBJECT_LOCATIONCHANGE:
                     if (!isTarget) return;
                         OnMoveOrSizeChanged?.Invoke(this, null);
+                        break;
+                    case EVENT_OBJECT_REORDER:
+                        if (!isTarget) return;
+                        if (idObject != 0 /* WindowObjId*/) return;
+                        OnBorderChanged?.Invoke(this, null);
                         break;
                     default:
                         if (isTarget)
