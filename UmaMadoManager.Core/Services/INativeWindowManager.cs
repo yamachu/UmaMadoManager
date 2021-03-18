@@ -11,6 +11,7 @@ namespace UmaMadoManager.Core.Services
         void ResizeWindow(IntPtr hWnd, WindowRect rect);
         void SetHook(string windowName);
         void SetTopMost(IntPtr hWnd, bool doTop);
+        void RemoveBorder(IntPtr hWnd, bool doRemove);
 
         event EventHandler<bool> OnForeground;
         event EventHandler<bool> OnMinimized;
