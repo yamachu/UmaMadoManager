@@ -190,6 +190,15 @@ namespace UmaMadoManager.Windows.Views
                         }));
                         vv.CheckOnClick = true;
                     }));
+                    v.DropDownItems.Add(new ToolStripMenuItem("RemoveBorder").Also(vv => {
+                        this.Disposable.Add(Observable.FromEventPattern(vv, nameof(vv.Click)).Subscribe(x => {
+                            _VM.IsRemoveBorder.Value = !_VM.IsRemoveBorder.Value;
+                        }));
+                        this.Disposable.Add(_VM.IsRemoveBorder.Subscribe(x => {
+                            v.Checked = _VM.IsRemoveBorder.Value;
+                        }));
+                        v.CheckOnClick = true;
+                    }));
                 }),
                 new ToolStripSeparator(),
                 new ToolStripMenuItem("Help").Also(v => {
