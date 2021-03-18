@@ -175,7 +175,7 @@ namespace UmaMadoManager.Core.ViewModels
                 audioManager.SetMute(handle, condition.ToIsMute(state));
             }));
 
-            Disposable.Add(windowRect.DistinctUntilChanged().CombineLatest(targetWindowHandle, Vertical.CombineLatest(WindowFittingStandard, UserDefinedVerticalWindowRect), Horizontal.CombineLatest(UserDefinedHorizontalWindowRect))
+            Disposable.Add(windowRect.DistinctUntilChanged().CombineLatest(targetWindowHandle, Vertical.CombineLatest(WindowFittingStandard, UserDefinedVerticalWindowRect), Horizontal.CombineLatest(UserDefinedHorizontalWindowRect), IsRemoveBorder)
                 .Where(x => x.Second != IntPtr.Zero)
                 .Subscribe(x =>
                 {
@@ -195,9 +195,11 @@ namespace UmaMadoManager.Core.ViewModels
                                 switch (axis)
                                 {
                                     case AxisStandard.Application:
+                                        nativeWindowManager.RemoveBorder(x.Second, false);
                                         return;
                                     case AxisStandard.User:
                                         {
+                                            nativeWindowManager.RemoveBorder(x.Second, false);
                                             if (userDefinedRect.IsEmpty)
                                             {
                                                 return;
@@ -207,7 +209,8 @@ namespace UmaMadoManager.Core.ViewModels
                                         }
                                     case AxisStandard.Full:
                                         {
-                                            var nextSize = containsScreen.Value.MaxContainerbleWindowRect(x.First.Item1, x.First.Item2, Models.WindowFittingStandard.LeftTop /* 使わないので固定値 */);
+                                            var nextSize = containsScreen.Value.MaxContainerbleWindowRect(x.Fifth ? x.First.Item2 : x.First.Item1, x.First.Item2, Models.WindowFittingStandard.LeftTop /* 使わないので固定値 */);
+                                            nativeWindowManager.RemoveBorder(x.Second, x.Fifth);
                                             nativeWindowManager.ResizeWindow(x.Second, nextSize);
                                             return;
                                         }
@@ -221,9 +224,11 @@ namespace UmaMadoManager.Core.ViewModels
                                 switch (axis)
                                 {
                                     case AxisStandard.Application:
+                                        nativeWindowManager.RemoveBorder(x.Second, false);
                                         return;
                                     case AxisStandard.User:
                                         {
+                                            nativeWindowManager.RemoveBorder(x.Second, false);
                                             if (userDefinedRect.IsEmpty)
                                             {
                                                 return;
@@ -233,7 +238,8 @@ namespace UmaMadoManager.Core.ViewModels
                                         }
                                     case AxisStandard.Full:
                                         {
-                                            var nextSize = containsScreen.Value.MaxContainerbleWindowRect(x.First.Item1, x.First.Item2, fittingStandard);
+                                            var nextSize = containsScreen.Value.MaxContainerbleWindowRect(x.Fifth ? x.First.Item2 : x.First.Item1, x.First.Item2, fittingStandard);
+                                            nativeWindowManager.RemoveBorder(x.Second, x.Fifth);
                                             nativeWindowManager.ResizeWindow(x.Second, nextSize);
                                             return;
                                         }
