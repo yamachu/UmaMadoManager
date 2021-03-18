@@ -79,9 +79,13 @@ namespace UmaMadoManager.Core.ViewModels
 
             Disposable.Add(TargetApplicationName.Subscribe(x => nativeWindowManager.SetHook(x)));
 
+            var observableBorderChanged = Observable.FromEventPattern(nativeWindowManager, nameof(nativeWindowManager.OnBorderChanged)).StartWith(new object[] { null });
+            var observableOnMoveChanged = Observable.FromEventPattern(nativeWindowManager, nameof(nativeWindowManager.OnMoveOrSizeChanged)).Throttle(TimeSpan.FromMilliseconds(200)).StartWith(new object[] { null });
+
             var windowRect = targetWindowHandle
                 .CombineLatest(
-                    Observable.FromEventPattern(nativeWindowManager, nameof(nativeWindowManager.OnMoveOrSizeChanged))
+                    observableOnMoveChanged,
+                    observableBorderChanged.Delay(TimeSpan.FromMilliseconds(500))
                 )
                 .Select(x =>
                 {
