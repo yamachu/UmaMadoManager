@@ -29,6 +29,8 @@ namespace UmaMadoManager.Core.ViewModels
         public ReactiveProperty<string> LatestVersion { get; }
         public ReactiveProperty<bool> IsMostTop { get; }
 
+        public ReactiveProperty<bool> IsRemoveBorder { get; }
+
         private ReadOnlyReactiveProperty<IntPtr> targetWindowHandle;
 
         private ReactiveProperty<T> BindSettings<T>(T val, string nameofParameter, ReactivePropertyMode mode = ReactivePropertyMode.Default)
@@ -66,6 +68,7 @@ namespace UmaMadoManager.Core.ViewModels
             UserDefinedVerticalWindowRect = BindSettings(settings.UserDefinedVerticalWindowRect, nameof(settings.UserDefinedVerticalWindowRect));
             UserDefinedHorizontalWindowRect = BindSettings(settings.UserDefinedHorizontalWindowRect, nameof(settings.UserDefinedHorizontalWindowRect));
             IsMostTop = BindSettings(settings.IsMostTop, nameof(settings.IsMostTop));
+            IsRemoveBorder = BindSettings(settings.IsRemoveBorder, nameof(settings.IsRemoveBorder));
 
             // FIXME: PollingじゃなくてGlobalHookとかでやりたい
             targetWindowHandle = Observable.Interval(TimeSpan.FromSeconds(1))
