@@ -185,7 +185,7 @@ namespace UmaMadoManager.Windows.Views
                         this.Disposable.Add(Observable.FromEventPattern(vv, nameof(vv.Click)).Subscribe(x => {
                             _VM.IsMostTop.Value = !_VM.IsMostTop.Value;
                         }));
-                        this.Disposable.Add(_VM.MuteCondition.Subscribe(x => {
+                        this.Disposable.Add(_VM.IsMostTop.Subscribe(x => {
                             vv.Checked = _VM.IsMostTop.Value;
                         }));
                         vv.CheckOnClick = true;
