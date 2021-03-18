@@ -71,6 +71,7 @@ namespace UmaMadoManager.Windows.Services
                         break;
                     case EVENT_SYSTEM_MOVESIZEEND:
                     case EVENT_OBJECT_LOCATIONCHANGE:
+                    if (!isTarget) return;
                         OnMoveOrSizeChanged?.Invoke(this, null);
                         break;
                     default:
