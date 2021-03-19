@@ -195,9 +195,9 @@ namespace UmaMadoManager.Windows.Views
                             _VM.IsRemoveBorder.Value = !_VM.IsRemoveBorder.Value;
                         }));
                         this.Disposable.Add(_VM.IsRemoveBorder.Subscribe(x => {
-                            v.Checked = _VM.IsRemoveBorder.Value;
+                            vv.Checked = _VM.IsRemoveBorder.Value;
                         }));
-                        v.CheckOnClick = true;
+                        vv.CheckOnClick = true;
                     }));
                 }),
                 new ToolStripSeparator(),
