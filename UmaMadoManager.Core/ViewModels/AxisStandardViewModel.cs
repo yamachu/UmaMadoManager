@@ -31,6 +31,8 @@ namespace UmaMadoManager.Core.ViewModels
 
         public ReactiveProperty<bool> IsRemoveBorder { get; }
 
+        public ReactiveProperty<bool> IsConsoleAllocated { get; }
+
         private ReadOnlyReactiveProperty<IntPtr> targetWindowHandle;
 
         private ReactiveProperty<T> BindSettings<T>(T val, string nameofParameter, ReactivePropertyMode mode = ReactivePropertyMode.Default)
@@ -45,6 +47,7 @@ namespace UmaMadoManager.Core.ViewModels
         }
 
         public Action OnExit;
+        public Action OnAllocateDebugConsoleClicked;
 
         // FIXME: VMでやることじゃない
         public AxisStandardViewModel(
@@ -52,7 +55,8 @@ namespace UmaMadoManager.Core.ViewModels
             IScreenManager screenManager,
             IAudioManager audioManager,
             IVersionRepository versionRepository,
-            ISettingService settingService
+            ISettingService settingService,
+            IDebugService debugService
             )
         {
             settings = settingService.Instance();
@@ -69,6 +73,7 @@ namespace UmaMadoManager.Core.ViewModels
             UserDefinedHorizontalWindowRect = BindSettings(settings.UserDefinedHorizontalWindowRect, nameof(settings.UserDefinedHorizontalWindowRect));
             IsMostTop = BindSettings(settings.IsMostTop, nameof(settings.IsMostTop));
             IsRemoveBorder = BindSettings(settings.IsRemoveBorder, nameof(settings.IsRemoveBorder));
+            IsConsoleAllocated = new ReactiveProperty<bool>(false);
 
             // FIXME: PollingじゃなくてGlobalHookとかでやりたい
             targetWindowHandle = Observable.Interval(TimeSpan.FromSeconds(1))
@@ -187,6 +192,9 @@ namespace UmaMadoManager.Core.ViewModels
                     {
                         return;
                     }
+                    System.Console.WriteLine("--- start current Window Rect ---");
+                    System.Console.WriteLine(x.First);
+                    System.Console.WriteLine("--- end current Window Rect ---");
                     switch (x.First.Item1.Direction)
                     {
                         case WindowDirection.Horizontal:
@@ -210,6 +218,9 @@ namespace UmaMadoManager.Core.ViewModels
                                     case AxisStandard.Full:
                                         {
                                             var nextSize = containsScreen.Value.MaxContainerbleWindowRect(x.Fifth ? x.First.Item2 : x.First.Item1, x.First.Item2, Models.WindowFittingStandard.LeftTop /* 使わないので固定値 */);
+                                            System.Console.WriteLine("--- start next Window Rect ---");
+                                            System.Console.WriteLine(nextSize);
+                                            System.Console.WriteLine("--- end next Window Rect ---");
                                             nativeWindowManager.RemoveBorder(x.Second, x.Fifth);
                                             nativeWindowManager.ResizeWindow(x.Second, nextSize);
                                             return;
@@ -239,6 +250,9 @@ namespace UmaMadoManager.Core.ViewModels
                                     case AxisStandard.Full:
                                         {
                                             var nextSize = containsScreen.Value.MaxContainerbleWindowRect(x.Fifth ? x.First.Item2 : x.First.Item1, x.First.Item2, fittingStandard);
+                                            System.Console.WriteLine("--- start next Window Rect ---");
+                                            System.Console.WriteLine(nextSize);
+                                            System.Console.WriteLine("--- end next Window Rect ---");
                                             nativeWindowManager.RemoveBorder(x.Second, x.Fifth);
                                             nativeWindowManager.ResizeWindow(x.Second, nextSize);
                                             return;
@@ -263,6 +277,11 @@ namespace UmaMadoManager.Core.ViewModels
             OnExit = () =>
             {
                 settingService.Save();
+            };
+
+            OnAllocateDebugConsoleClicked = () =>
+            {
+                IsConsoleAllocated.Value = debugService.AllocConsole();
             };
         }
     }
