@@ -22,7 +22,7 @@ namespace UmaMadoManager.Windows.Services
 
         ~NativeWindowManager()
         {
-            if (!hHook.IsInvalid && !hHook.IsClosed)
+            if (hHook != null && !hHook.IsInvalid && !hHook.IsClosed)
             {
                 hHook.Close();
                 callback = null;
@@ -31,7 +31,7 @@ namespace UmaMadoManager.Windows.Services
 
         public void SetHook(string windowName)
         {
-            if (!hHook.IsInvalid && !hHook.IsClosed)
+            if (hHook != null && !hHook.IsInvalid && !hHook.IsClosed)
             {
                 hHook.Close();
                 callback = null;
@@ -40,7 +40,7 @@ namespace UmaMadoManager.Windows.Services
             callback = WinEventProc(windowName);
             hHook = SetWinEventHook(WindowsEventHookType.EVENT_SYSTEM_FOREGROUND, WindowsEventHookType.EVENT_OBJECT_LOCATIONCHANGE, IntPtr.Zero, callback, 0, 0, WindowsEventHookFlags.WINEVENT_OUTOFCONTEXT | WindowsEventHookFlags.WINEVENT_SKIPOWNPROCESS);
             var err = Marshal.GetLastWin32Error();
-            if (hHook.IsInvalid)
+            if (hHook == null || hHook.IsInvalid)
             {
                 System.Console.WriteLine("Hook set failed...");
                 System.Console.WriteLine($"error code: {err}");
