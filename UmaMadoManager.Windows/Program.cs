@@ -1,6 +1,7 @@
 using System;
 using System.Reflection;
 using System.Windows.Forms;
+using System.Linq;
 using UmaMadoManager.Windows.Services;
 
 [assembly:AssemblyKeyFileAttribute("keyfile.snk")]
@@ -14,7 +15,6 @@ namespace UmaMadoManager.Windows
         [STAThread]
         static void Main()
         {
-            // Native.Win32API.AllocConsole();
             Application.SetHighDpiMode(HighDpiMode.SystemAware);
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
@@ -24,7 +24,13 @@ namespace UmaMadoManager.Windows
             var audioManager = new AudioManager();
             var versionRepository = new VersionRepository();
             var settingService = new SettingService();
+            var debugService = new DebugService();
             settingService.Init();
+
+            var isDebugMode = System.Environment.GetCommandLineArgs().Count(v => v == "--debug") == 1;
+            if (isDebugMode) {
+                debugService.AllocConsole();
+            }
 
             var _ = new Views.UmaMadoManagerUI(
                 new Core.ViewModels.AxisStandardViewModel(
@@ -32,7 +38,9 @@ namespace UmaMadoManager.Windows
                     screenManager,
                     audioManager,
                     versionRepository,
-                    settingService));
+                    settingService,
+                    debugService),
+                isDebugMode);
             Application.Run();
         }
     }
