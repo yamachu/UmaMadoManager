@@ -363,3 +363,4 @@ FodyWeavers.xsd
 
 # Private key
 keyfile.snk
+keyfile.production.snk
