@@ -12,7 +12,7 @@ namespace UmaMadoManager.Windows.Services
                 return true;
             };
 
-            var allocated = Native.Win32API.AllocConsole() == 1;
+            var allocated = PInvoke.Kernel32.AllocConsole();
             IsAllocated = allocated;
             return allocated;
         }

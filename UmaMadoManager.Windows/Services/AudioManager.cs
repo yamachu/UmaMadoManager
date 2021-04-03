@@ -1,7 +1,7 @@
 using System;
 using NAudio.CoreAudioApi; //Wasapi
 using UmaMadoManager.Core.Services;
-using static UmaMadoManager.Windows.Native.Win32API;
+using static PInvoke.User32;
 
 namespace UmaMadoManager.Windows.Services
 {
