@@ -17,7 +17,7 @@ namespace UmaMadoManager.Windows.Views
         private Form VerticalUserPositionSettingModal;
         private Form HorizontalUserPositionSettingModal;
 
-        public UmaMadoManagerUI(AxisStandardViewModel viewModel, bool isDebugMode = false)
+        public UmaMadoManagerUI(AxisStandardViewModel viewModel)
         {
             var _VM = viewModel;
             var trayNotifyIcon = new NotifyIcon()
@@ -198,15 +198,6 @@ namespace UmaMadoManager.Windows.Views
                             vv.Checked = _VM.IsRemoveBorder.Value;
                         }));
                         vv.CheckOnClick = true;
-                    }));
-                    v.DropDownItems.Add(new ToolStripMenuItem("DebugConsole").Also(vv => {
-                        this.Disposable.Add(Observable.FromEventPattern(vv, nameof(vv.Click)).Subscribe(x => {
-                            _VM.OnAllocateDebugConsoleClicked();
-                        }));
-                        this.Disposable.Add(_VM.IsConsoleAllocated.Subscribe(x => {
-                            vv.Checked = _VM.IsConsoleAllocated.Value;
-                        }));
-                        vv.Visible = isDebugMode;
                     }));
                 }),
                 new ToolStripSeparator(),

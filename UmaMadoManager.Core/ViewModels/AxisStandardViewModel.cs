@@ -31,8 +31,6 @@ namespace UmaMadoManager.Core.ViewModels
 
         public ReactiveProperty<bool> IsRemoveBorder { get; }
 
-        public ReactiveProperty<bool> IsConsoleAllocated { get; }
-
         private ReadOnlyReactiveProperty<IntPtr> targetWindowHandle;
 
         private ReactiveProperty<T> BindSettings<T>(T val, string nameofParameter, ReactivePropertyMode mode = ReactivePropertyMode.Default)
@@ -55,9 +53,7 @@ namespace UmaMadoManager.Core.ViewModels
             IScreenManager screenManager,
             IAudioManager audioManager,
             IVersionRepository versionRepository,
-            ISettingService settingService,
-            IDebugService debugService
-            )
+            ISettingService settingService)
         {
             settings = settingService.Instance();
             Vertical = BindSettings(settings.Vertical, nameof(settings.Vertical));
@@ -73,7 +69,6 @@ namespace UmaMadoManager.Core.ViewModels
             UserDefinedHorizontalWindowRect = BindSettings(settings.UserDefinedHorizontalWindowRect, nameof(settings.UserDefinedHorizontalWindowRect));
             IsMostTop = BindSettings(settings.IsMostTop, nameof(settings.IsMostTop));
             IsRemoveBorder = BindSettings(settings.IsRemoveBorder, nameof(settings.IsRemoveBorder));
-            IsConsoleAllocated = new ReactiveProperty<bool>(false);
 
             // FIXME: PollingじゃなくてGlobalHookとかでやりたい
             targetWindowHandle = Observable.Interval(TimeSpan.FromSeconds(1))
@@ -277,11 +272,6 @@ namespace UmaMadoManager.Core.ViewModels
             OnExit = () =>
             {
                 settingService.Save();
-            };
-
-            OnAllocateDebugConsoleClicked = () =>
-            {
-                IsConsoleAllocated.Value = debugService.AllocConsole();
             };
         }
     }
