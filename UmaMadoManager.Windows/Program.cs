@@ -38,9 +38,7 @@ namespace UmaMadoManager.Windows
                     screenManager,
                     audioManager,
                     versionRepository,
-                    settingService,
-                    debugService),
-                isDebugMode);
+                    settingService));
             Application.Run();
         }
     }
