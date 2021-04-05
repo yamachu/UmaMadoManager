@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Reactive.Concurrency;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using Reactive.Bindings;
@@ -73,6 +74,7 @@ namespace UmaMadoManager.Core.ViewModels
             // FIXME: PollingじゃなくてGlobalHookとかでやりたい
             targetWindowHandle = Observable.Interval(TimeSpan.FromSeconds(1))
                 .CombineLatest(TargetApplicationName)
+                .ObserveOn(TaskPoolScheduler.Default)
                 .Select(x => nativeWindowManager.GetWindowHandle(x.Second))
                 .Distinct()
                 .ToReadOnlyReactiveProperty();
@@ -87,6 +89,7 @@ namespace UmaMadoManager.Core.ViewModels
                     observableOnMoveChanged,
                     observableBorderChanged.Delay(TimeSpan.FromMilliseconds(500))
                 )
+                .ObserveOn(TaskPoolScheduler.Default)
                 .Select(x =>
                 {
                     if (x.First == IntPtr.Zero)
@@ -177,6 +180,7 @@ namespace UmaMadoManager.Core.ViewModels
 
             Disposable.Add(windowRect.DistinctUntilChanged().CombineLatest(targetWindowHandle, Vertical.CombineLatest(WindowFittingStandard, UserDefinedVerticalWindowRect), Horizontal.CombineLatest(UserDefinedHorizontalWindowRect), IsRemoveBorder)
                 .Where(x => x.Second != IntPtr.Zero)
+                .SubscribeOn(TaskPoolScheduler.Default)
                 .Subscribe(x =>
                 {
                     var containsScreen = screenManager.GetScreens()
