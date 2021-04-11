@@ -139,6 +139,15 @@ namespace UmaMadoManager.Windows.Views
                     }));
                     v.CheckOnClick = true;
                 }),
+                new ToolStripMenuItem("Always").Also(v => {
+                    this.Disposable.Add(Observable.FromEventPattern(v, nameof(v.Click)).Subscribe(x => {
+                        _VM.MuteCondition.Value = MuteCondition.Always;
+                    }));
+                    this.Disposable.Add(_VM.MuteCondition.Subscribe(x => {
+                        v.Checked = x == MuteCondition.Always;
+                    }));
+                    v.CheckOnClick = true;
+                }),
                 new ToolStripMenuItem("When Background").Also(v => {
                     this.Disposable.Add(Observable.FromEventPattern(v, nameof(v.Click)).Subscribe(x => {
                         _VM.MuteCondition.Value = MuteCondition.WhenBackground;
