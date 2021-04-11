@@ -5,6 +5,7 @@ namespace UmaMadoManager.Core.Models
     public enum MuteCondition
     {
         Nop,
+        Always,
         WhenBackground,
         WhenMinimize
     }
@@ -16,6 +17,7 @@ namespace UmaMadoManager.Core.Models
             return (self, currentState) switch
             {
                 (MuteCondition.Nop, _) => false,
+                (MuteCondition.Always, _) => true,
                 (_, ApplicationState.Foreground) => false,
                 (MuteCondition.WhenBackground, ApplicationState.Background or ApplicationState.Minimized) => true,
                 (MuteCondition.WhenMinimize, ApplicationState.Minimized) => true,
