@@ -12,6 +12,9 @@ jobs:
       uses: actions/setup-dotnet@v1
       with:
         dotnet-version: 5.0.x
+    - name: workaround dotnet restore
+      # https://github.com/actions/virtual-environments/issues/3038#issuecomment-816450054 
+      run: Remove-Item $env:APPDATA\NuGet\NuGet.Config
     - name: Restore dependencies
       run: dotnet restore
     - name: Rename dev snk file
