@@ -45,7 +45,7 @@ namespace UmaMadoManager.Core.ViewModels
             });
         }
 
-        public Action OnExit;
+        public ReactiveCommand OnExit { get; }
         public Action OnAllocateDebugConsoleClicked;
 
         // FIXME: VMでやることじゃない
@@ -54,7 +54,8 @@ namespace UmaMadoManager.Core.ViewModels
             IScreenManager screenManager,
             IAudioManager audioManager,
             IVersionRepository versionRepository,
-            ISettingService settingService)
+            ISettingService settingService,
+            IApplicationService applicationService)
         {
             settings = settingService.Instance();
             Vertical = BindSettings(settings.Vertical, nameof(settings.Vertical));
@@ -72,7 +73,7 @@ namespace UmaMadoManager.Core.ViewModels
             IsRemoveBorder = BindSettings(settings.IsRemoveBorder, nameof(settings.IsRemoveBorder));
 
             // FIXME: PollingじゃなくてGlobalHookとかでやりたい
-            targetWindowHandle = Observable.Interval(TimeSpan.FromSeconds(1))
+            targetWindowHandle = Observable.Interval(TimeSpan.FromSeconds(5))
                 .CombineLatest(TargetApplicationName)
                 .Select(x => nativeWindowManager.GetWindowHandle(x.Second))
                 .Distinct()
@@ -183,9 +184,9 @@ namespace UmaMadoManager.Core.ViewModels
                 .Subscribe(x =>
                 {
                     var containsScreen = screenManager.GetScreens()
-                        .Where(s => s.ContainsWindow(x.First.Item1))
-                        .Cast<Screen?>()
-                        .FirstOrDefault();
+                                            .Where(s => s.ContainsWindow(x.First.Item1))
+                                            .Cast<Screen?>()
+                                            .FirstOrDefault();
                     if (containsScreen == null)
                     {
                         return;
@@ -272,10 +273,12 @@ namespace UmaMadoManager.Core.ViewModels
                 nativeWindowManager.SetTopMost(handle, doTop);
             }));
 
-            OnExit = () =>
+            OnExit = new ReactiveCommand();
+            OnExit.Subscribe(_ =>
             {
                 settingService.Save();
-            };
+                applicationService.Shutdown();
+            });
         }
     }
 }
