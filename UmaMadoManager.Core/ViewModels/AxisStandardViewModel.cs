@@ -46,6 +46,7 @@ namespace UmaMadoManager.Core.ViewModels
         }
 
         public ReactiveCommand OnExit { get; }
+        public ReactiveCommand OnClickedNavigateHostingSite { get; }
         public Action OnAllocateDebugConsoleClicked;
 
         // FIXME: VMでやることじゃない
@@ -293,6 +294,22 @@ namespace UmaMadoManager.Core.ViewModels
                 if (x != Models.WindowFittingStandard.Unset)
                 {
                     Vertical.Value = AxisStandard.Full;
+                }
+            });
+
+            OnClickedNavigateHostingSite = new ReactiveCommand();
+            OnClickedNavigateHostingSite.Subscribe(_ =>
+            {
+                var url = "https://yamachu.booth.pm/items/2811984";
+
+                try
+                {
+                    // see: https://brockallen.com/2016/09/24/process-start-for-urls-on-net-core/
+                    System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo("cmd", $"/c start {url}") { CreateNoWindow = true });
+                }
+                catch (Exception e)
+                {
+                    System.Console.WriteLine(e);
                 }
             });
         }
