@@ -279,6 +279,22 @@ namespace UmaMadoManager.Core.ViewModels
                 settingService.Save();
                 applicationService.Shutdown();
             });
+
+            Vertical.Subscribe(x =>
+            {
+                if (x != AxisStandard.Full)
+                {
+                    WindowFittingStandard.Value = Models.WindowFittingStandard.Unset;
+                }
+            });
+
+            WindowFittingStandard.Subscribe(x =>
+            {
+                if (x != Models.WindowFittingStandard.Unset)
+                {
+                    Vertical.Value = AxisStandard.Full;
+                }
+            });
         }
     }
 }
