@@ -8,6 +8,7 @@
     <c:AxisStandardEnumBoolConverter x:Key="AxisStandardEnumConverter" />
     <c:WindowFittingStandardEnumConverter x:Key="WindowFittingStandardEnumConverter" />
     <c:MuteConditionEnumConveter x:Key="MuteConditionEnumConveter" />
+    <c:CurrentVersionEqualConverter x:Key="CurrentVersionEqualConverter" />
     
     <ContextMenu x:Key="SysTrayMenu">
 
