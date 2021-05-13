@@ -9,9 +9,73 @@
     <c:WindowFittingStandardEnumConverter x:Key="WindowFittingStandardEnumConverter" />
     <c:MuteConditionEnumConveter x:Key="MuteConditionEnumConveter" />
     <c:CurrentVersionEqualConverter x:Key="CurrentVersionEqualConverter" />
-    
-    <ContextMenu x:Key="SysTrayMenu">
 
+    <ContextMenu x:Key="SysTrayMenu">
+        <MenuItem Header="Vertical">
+            <MenuItem.Items>
+                <MenuItem Header="Application default" IsChecked="{
+                        Binding Path=Vertical.Value, Mode=TwoWay, Converter={StaticResource AxisStandardEnumConverter}, ConverterParameter={x:Static m:AxisStandard.Application}
+                    }" IsCheckable="True" />
+                <MenuItem Header="User defined" IsChecked="{
+                        Binding Path=Vertical.Value, Mode=OneWay, Converter={StaticResource AxisStandardEnumConverter}, ConverterParameter={x:Static m:AxisStandard.User}
+                    }" Command="{Binding OnClickedOpenVerticalUserDefinedModal}" />
+                <MenuItem Header="Full height" IsChecked="{
+                        Binding Path=Vertical.Value, Mode=TwoWay, Converter={StaticResource AxisStandardEnumConverter}, ConverterParameter={x:Static m:AxisStandard.Full}
+                    }">
+                    <MenuItem.Items>
+                        <MenuItem Header="Left Top" IsChecked="{
+                                Binding Path=WindowFittingStandard.Value, Mode=TwoWay, Converter={StaticResource WindowFittingStandardEnumConverter}, ConverterParameter={x:Static m:WindowFittingStandard.LeftTop}
+                   }" IsCheckable="True"/>
+                        <MenuItem Header="Right Top" IsChecked="{Binding Path=WindowFittingStandard.Value,Mode=TwoWay, Converter={StaticResource WindowFittingStandardEnumConverter}, ConverterParameter={x:Static m:WindowFittingStandard.RightTop}
+                   }" IsCheckable="True"/>
+                    </MenuItem.Items>
+                </MenuItem>
+            </MenuItem.Items>
+        </MenuItem>
+
+        <MenuItem Header="Horizontal">
+            <MenuItem.Items>
+                <MenuItem Header="Application default" IsChecked="{Binding Path=Horizontal.Value,Mode=TwoWay, Converter={StaticResource AxisStandardEnumConverter}, ConverterParameter={x:Static m:AxisStandard.Application}
+                   }" IsCheckable="True"/>
+                <MenuItem Header="User defined" IsChecked="{Binding Path=Horizontal.Value,Mode=OneWay, Converter={StaticResource AxisStandardEnumConverter}, ConverterParameter={x:Static m:AxisStandard.User}
+                   }" Command="{Binding OnClickedOpenHorizontalUserDefinedModal}" />
+                <MenuItem Header="Full width" IsChecked="{Binding Path=Horizontal.Value,Mode=TwoWay, Converter={StaticResource AxisStandardEnumConverter}, ConverterParameter={x:Static m:AxisStandard.Full}
+                   }" IsCheckable="True" />
+            </MenuItem.Items>
+        </MenuItem>
+
+        <Separator />
+
+        <MenuItem Header="Mute">
+            <MenuItem.Items>
+                <MenuItem Header="Sounded" IsChecked="{Binding Path=MuteCondition.Value,Mode=TwoWay, Converter={StaticResource MuteConditionEnumConveter}, ConverterParameter={x:Static m:MuteCondition.Nop}
+                   }" IsCheckable="True" />
+                <MenuItem Header="Always" IsChecked="{Binding Path=MuteCondition.Value,Mode=TwoWay, Converter={StaticResource MuteConditionEnumConveter}, ConverterParameter={x:Static m:MuteCondition.Always}
+                   }" IsCheckable="True" />
+                <MenuItem Header="When Background" IsChecked="{Binding Path=MuteCondition.Value,Mode=TwoWay, Converter={StaticResource MuteConditionEnumConveter}, ConverterParameter={x:Static m:MuteCondition.WhenBackground}
+                   }" IsCheckable="True" />
+                <MenuItem Header="When Minimized" IsChecked="{Binding Path=MuteCondition.Value,Mode=TwoWay, Converter={StaticResource MuteConditionEnumConveter}, ConverterParameter={x:Static m:MuteCondition.WhenMinimize}
+                   }" IsCheckable="True" />
+            </MenuItem.Items>
+        </MenuItem>
+
+        <Separator />
+
+        <MenuItem Header="Experimental">
+            <MenuItem.Items>
+                <MenuItem Header="Always Top" IsChecked="{Binding Path=IsMostTop.Value,Mode=TwoWay}" IsCheckable="True" />
+                <MenuItem Header="Remove Border" IsChecked="{Binding Path=IsRemoveBorder.Value,Mode=TwoWay}" IsCheckable="True" />
+            </MenuItem.Items>
+        </MenuItem>
+
+        <Separator />
+
+        <MenuItem Header="Help" Command="{Binding OnClickedNavigateHostingSite}" />
+        <MenuItem Header="New Version Released" Command="{Binding OnClickedNavigateHostingSite}" Visibility="{Binding Path=LatestVersion.Value,Converter={StaticResource CurrentVersionEqualConverter}}"/>
+        
+        <Separator />
+        
+        <MenuItem Header="Exit" Command="{Binding OnExit}" />
     </ContextMenu>
 
     <tb:TaskbarIcon x:Key="NotifyIcon"   
