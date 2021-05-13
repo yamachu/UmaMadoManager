@@ -47,6 +47,8 @@ namespace UmaMadoManager.Core.ViewModels
 
         public ReactiveCommand OnExit { get; }
         public ReactiveCommand OnClickedNavigateHostingSite { get; }
+        public ReactiveCommand OnClickedOpenVerticalUserDefinedModal { get; }
+        public ReactiveCommand OnClickedOpenHorizontalUserDefinedModal { get; }
         public Action OnAllocateDebugConsoleClicked;
 
         // FIXME: VMでやることじゃない
@@ -314,6 +316,9 @@ namespace UmaMadoManager.Core.ViewModels
                     System.Console.WriteLine(e);
                 }
             });
+
+            OnClickedOpenHorizontalUserDefinedModal = new ReactiveCommand();
+            OnClickedOpenVerticalUserDefinedModal = new ReactiveCommand();
         }
     }
 }
