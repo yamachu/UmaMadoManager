@@ -155,7 +155,7 @@ namespace UmaMadoManager.Core.ViewModels
                     Observable.FromEventPattern<bool>(nativeWindowManager, nameof(nativeWindowManager.OnMinimized))
                         .Select(x => x.EventArgs.ToDefaultableBooleanLike()).StartWith(DefaultableBooleanLike.Default)
                 )
-                .ObserveOn(TaskPoolScheduler.Default)
+                .DistinctUntilChanged()
                 .Select(x =>
                 {
                     var maybeForeground = x[0];
@@ -174,6 +174,8 @@ namespace UmaMadoManager.Core.ViewModels
                     };
                 })
             )
+            .DistinctUntilChanged()
+            .ObserveOn(TaskPoolScheduler.Default)
             .Subscribe(x =>
             {
                 var (handle, condition, state) = x;
