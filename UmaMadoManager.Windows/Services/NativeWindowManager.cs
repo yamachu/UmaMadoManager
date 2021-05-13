@@ -89,16 +89,12 @@ namespace UmaMadoManager.Windows.Services
 
         public IntPtr GetWindowHandle(string windowName)
         {
-            try
+            var process = Process.GetProcesses().FirstOrDefault(x => x.MainWindowTitle == windowName);
+            if (process == default(Process))
             {
-                var process = Process.GetProcesses().First(x => x.MainWindowTitle == windowName);
-                return process.MainWindowHandle;
-            }
-            catch (Exception e)
-            {
-                System.Console.WriteLine(e);
                 return IntPtr.Zero;
             }
+            return process.MainWindowHandle;
         }
 
         public (WindowRect window, WindowRect client) GetWindowRect(IntPtr hWnd)
