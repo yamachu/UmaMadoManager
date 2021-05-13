@@ -4,7 +4,9 @@ using System.Linq;
 using System.Reflection;
 using System.Windows;
 using Hardcodet.Wpf.TaskbarNotification;
+using UmaMadoManager.Core.Models;
 using UmaMadoManager.Windows.Services;
+using Application = System.Windows.Application;
 
 namespace UmaMadoManager.Windows
 {
@@ -30,7 +32,8 @@ namespace UmaMadoManager.Windows
             settingService.Init();
 
             var isDebugMode = System.Environment.GetCommandLineArgs().Count(v => v == "--debug") == 1;
-            if (isDebugMode) {
+            if (isDebugMode)
+            {
                 debugService.AllocConsole();
             }
 
@@ -46,6 +49,42 @@ namespace UmaMadoManager.Windows
             var icon = new Icon(Assembly.GetExecutingAssembly().GetManifestResourceStream("UmaMadoManager.Windows.Resources.TrayIcon.ico"));
             notifyIcon.Icon = icon;
             notifyIcon.DataContext = viewModel;
+
+            viewModel.OnClickedOpenVerticalUserDefinedModal.Subscribe(s =>
+            {
+                var view = new Views.UserDefineModal(!viewModel.UserDefinedVerticalWindowRect.Value.IsEmpty);
+                view.OnClickUsingPrevious = () =>
+                {
+                    viewModel.UseCurrentVerticalUserSetting.Value = false;
+                    viewModel.Vertical.Value = AxisStandard.User;
+                    view.Close();
+                };
+                view.OnClickUsingCurrent = () =>
+                {
+                    viewModel.UseCurrentVerticalUserSetting.Value = true;
+                    viewModel.Vertical.Value = AxisStandard.User;
+                    view.Close();
+                };
+                view.Show();
+            });
+
+            viewModel.OnClickedOpenHorizontalUserDefinedModal.Subscribe(_ =>
+            {
+                var view = new Views.UserDefineModal(!viewModel.UserDefinedHorizontalWindowRect.Value.IsEmpty);
+                view.OnClickUsingPrevious = () =>
+                {
+                    viewModel.UseCurrentHorizontalUserSetting.Value = false;
+                    viewModel.Horizontal.Value = AxisStandard.User;
+                    view.Close();
+                };
+                view.OnClickUsingCurrent = () =>
+                {
+                    viewModel.UseCurrentHorizontalUserSetting.Value = true;
+                    viewModel.Horizontal.Value = AxisStandard.User;
+                    view.Close();
+                };
+                view.Show();
+            });
         }
 
         protected override void OnExit(ExitEventArgs e)
