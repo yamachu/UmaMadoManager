@@ -8,6 +8,7 @@
     <OutputType>WinExe</OutputType>
     <TargetFramework>net5.0-windows</TargetFramework>
     <UseWindowsForms>true</UseWindowsForms>
+		<UseWPF>true</UseWPF>
 		<Version>1.5.0-pre2</Version>
     <PublishSingleFile>true</PublishSingleFile>
     <SelfContained>true</SelfContained>
@@ -22,10 +23,17 @@
     <EmbeddedResource Include="Resources\TrayIcon.ico" />
   </ItemGroup>
   <ItemGroup>
+		<PackageReference Include="Hardcodet.NotifyIcon.Wpf" Version="1.1.0" />
     <PackageReference Include="NAudio.Wasapi" Version="2.0.0" />
     <PackageReference Include="PInvoke.Kernel32" Version="0.7.104" />
     <PackageReference Include="PInvoke.User32" Version="0.7.104" />
     <PackageReference Include="System.Configuration.ConfigurationManager" Version="5.0.0" />
   </ItemGroup>
 
+  <!-- ref: https://github.com/dotnet/sdk/issues/14261 -->
+  <ItemGroup>
+    <TrimmerRootAssembly Include="System.Diagnostics.Debug" />
+    <TrimmerRootAssembly Include="System.Runtime" />
+    <TrimmerRootAssembly Include="System.Runtime.Extensions" />
+  </ItemGroup>
 </Project>

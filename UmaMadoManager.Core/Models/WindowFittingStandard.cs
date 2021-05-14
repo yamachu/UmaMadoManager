@@ -6,5 +6,6 @@ namespace UmaMadoManager.Core.Models
     {
         LeftTop,
         RightTop,
+        Unset
     }
 }

@@ -76,7 +76,7 @@ namespace UmaMadoManager.Core.Models
         [System.Configuration.UserScopedSettingAttribute()]
         public WindowFittingStandard WindowFittingStandard
         {
-            get { return this["WindowFittingStandard"] == null ? WindowFittingStandard.LeftTop : (WindowFittingStandard)this["WindowFittingStandard"]; }
+            get { return this["WindowFittingStandard"] == null ? WindowFittingStandard.Unset : (WindowFittingStandard)this["WindowFittingStandard"]; }
             set { this["WindowFittingStandard"] = value; }
         }
 
