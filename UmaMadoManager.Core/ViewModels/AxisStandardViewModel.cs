@@ -78,7 +78,9 @@ namespace UmaMadoManager.Core.ViewModels
                 .Distinct()
                 .ToReadOnlyReactiveProperty();
 
+            // FIXME: TargetApplicationNameが変わってもThreadが変わって動かなくなるわ…
             Disposable.Add(TargetApplicationName.Subscribe(x => nativeWindowManager.SetHook(x)));
+            Disposable.Add(targetWindowHandle.Subscribe(x => nativeWindowManager.SetTargetProcessHandler(x)));
 
             var observableBorderChanged = Observable.FromEventPattern(nativeWindowManager, nameof(nativeWindowManager.OnBorderChanged)).StartWith(new object[] { null });
             var observableOnMoveChanged = Observable.FromEventPattern(nativeWindowManager, nameof(nativeWindowManager.OnMoveOrSizeChanged)).Throttle(TimeSpan.FromMilliseconds(200)).StartWith(new object[] { null });
