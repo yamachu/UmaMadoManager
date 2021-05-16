@@ -72,7 +72,7 @@ namespace UmaMadoManager.Core.ViewModels
             IsRemoveBorder = BindSettings(settings.IsRemoveBorder, nameof(settings.IsRemoveBorder));
 
             // FIXME: PollingじゃなくてGlobalHookとかでやりたい
-            targetWindowHandle = Observable.Interval(TimeSpan.FromSeconds(1))
+            targetWindowHandle = Observable.Interval(TimeSpan.FromSeconds(5))
                 .CombineLatest(TargetApplicationName)
                 .Select(x => nativeWindowManager.GetWindowHandle(x.Second))
                 .Distinct()
