@@ -10,6 +10,7 @@ namespace UmaMadoManager.Core.Services
         (WindowRect window, WindowRect client) GetWindowRect(IntPtr hWnd);
         void ResizeWindow(IntPtr hWnd, WindowRect rect);
         void SetHook(string windowName);
+        void SetTargetProcessHandler(IntPtr processPtr);
         void SetTopMost(IntPtr hWnd, bool doTop);
         void RemoveBorder(IntPtr hWnd, bool doRemove);
 

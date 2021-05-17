@@ -72,13 +72,15 @@ namespace UmaMadoManager.Core.ViewModels
             IsRemoveBorder = BindSettings(settings.IsRemoveBorder, nameof(settings.IsRemoveBorder));
 
             // FIXME: PollingじゃなくてGlobalHookとかでやりたい
-            targetWindowHandle = Observable.Interval(TimeSpan.FromSeconds(1))
+            targetWindowHandle = Observable.Interval(TimeSpan.FromSeconds(5))
                 .CombineLatest(TargetApplicationName)
                 .Select(x => nativeWindowManager.GetWindowHandle(x.Second))
                 .Distinct()
                 .ToReadOnlyReactiveProperty();
 
+            // FIXME: TargetApplicationNameが変わってもThreadが変わって動かなくなるわ…
             Disposable.Add(TargetApplicationName.Subscribe(x => nativeWindowManager.SetHook(x)));
+            Disposable.Add(targetWindowHandle.Subscribe(x => nativeWindowManager.SetTargetProcessHandler(x)));
 
             var observableBorderChanged = Observable.FromEventPattern(nativeWindowManager, nameof(nativeWindowManager.OnBorderChanged)).StartWith(new object[] { null });
             var observableOnMoveChanged = Observable.FromEventPattern(nativeWindowManager, nameof(nativeWindowManager.OnMoveOrSizeChanged)).Throttle(TimeSpan.FromMilliseconds(200)).StartWith(new object[] { null });

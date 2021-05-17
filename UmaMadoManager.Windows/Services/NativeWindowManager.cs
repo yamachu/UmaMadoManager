@@ -13,6 +13,7 @@ namespace UmaMadoManager.Windows.Services
     {
         private SafeEventHookHandle hHook;
         private WinEventProc callback;
+        private int _targetProcessId;
 
         public event EventHandler<bool> OnForeground;
         public event EventHandler<bool> OnMinimized;
@@ -27,6 +28,12 @@ namespace UmaMadoManager.Windows.Services
                 hHook.Close();
                 callback = null;
             }
+        }
+
+        public void SetTargetProcessHandler(IntPtr processPtr)
+        {
+            GetWindowThreadProcessId(processPtr, out var targetProcessId);
+            _targetProcessId = targetProcessId;
         }
 
         public void SetHook(string windowName)
@@ -52,8 +59,7 @@ namespace UmaMadoManager.Windows.Services
             return (IntPtr hWinEventHook, WindowsEventHookType eventType, IntPtr hWnd, int idObject, int idChild, int dwEventThread, uint dwmsEventTime) =>
             {
                 GetWindowThreadProcessId(hWnd, out var targetProcessId);
-                var process = Process.GetProcessById((int)targetProcessId);
-                var isTarget = process?.MainWindowTitle == windowName;
+                var isTarget = targetProcessId == _targetProcessId;
                 switch (eventType)
                 {
                     case WindowsEventHookType.EVENT_SYSTEM_FOREGROUND:
