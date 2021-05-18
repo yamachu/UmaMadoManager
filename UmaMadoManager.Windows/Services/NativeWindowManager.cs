@@ -142,7 +142,7 @@ namespace UmaMadoManager.Windows.Services
         public void RemoveBorder(IntPtr hWnd, bool doRemove)
         {
             var currentStyle = (SetWindowLongFlags)GetWindowLong(hWnd, WindowLongIndexFlags.GWL_STYLE);
-            var borderStyle = (SetWindowLongFlags.WS_CAPTION | SetWindowLongFlags.WS_THICKFRAME | SetWindowLongFlags.WS_MINIMIZEBOX | SetWindowLongFlags.WS_MAXIMIZEBOX | SetWindowLongFlags.WS_SYSMENU);
+            var borderStyle = (SetWindowLongFlags.WS_CAPTION | SetWindowLongFlags.WS_THICKFRAME | SetWindowLongFlags.WS_MINIMIZEBOX | SetWindowLongFlags.WS_SYSMENU);
             var nextStyle = doRemove ? currentStyle & ~borderStyle : currentStyle | borderStyle;
             SetWindowLong(hWnd, WindowLongIndexFlags.GWL_STYLE, nextStyle);
             SetWindowPos(hWnd, IntPtr.Zero, 0, 0, 0, 0, SetWindowPosFlags.SWP_FRAMECHANGED | SetWindowPosFlags.SWP_NOMOVE | SetWindowPosFlags.SWP_NOSIZE | SetWindowPosFlags.SWP_NOZORDER | SetWindowPosFlags.SWP_NOOWNERZORDER);
